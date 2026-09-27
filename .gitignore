@@ -1,0 +1,7 @@
+# se generan cada noche, no se guardan
+web/
+datos/mcp/
+datos/calculado.parquet
+datos/profundo.json
+datos/constantes.json
+__pycache__/
