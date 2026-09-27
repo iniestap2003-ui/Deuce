@@ -1,0 +1,11 @@
+Informe del robot · 2026-09-27 11:18
+robots.txt: leído
+lista de Tennis Abstract: 2648 KB · partidos masculinos: 10,118
+de nuestro archivo y aún sin tener: 2,168 (de Roland Garros 2026: 24)
+descargadas y convertidas: 496 · fallos de conexión: 0 · no interpretadas: 104
+  no se pudo interpretar 20260226-M-Acapulco-QF-Yibing_Wu-Flavio_Cobolli.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20260524-M-Roland_Garros-R128-Alexander_Blockx-Coleman_Wong.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20260524-M-Roland_Garros-R128-Damir_Dzumhur-Alejandro_Davidovich_Fokina.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20260525-M-Roland_Garros-R128-Hugo_Gaston-Gael_Monfils.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20260526-M-Roland_Garros-R128-Daniil_Medvedev-Adam_Walton.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+quedan 1568 para la próxima ejecución

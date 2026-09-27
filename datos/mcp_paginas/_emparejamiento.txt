@@ -1,0 +1,13 @@
+páginas convertidas: 497 · emparejadas con el archivo: 497 · con análisis profundo: 490
+
+sin pareja en el archivo (0):
+  
+
+no pasan el control de calidad (7):
+  20010312-M-Indian_Wells-QF-Nicolas_Lapentti-Andre_Agassi.json: su punto a punto no reproduce el resultado oficial 6-1 6-2
+  20000812-M-Cincinnati_Masters-SF-Tim_Henman-Gustavo_Kuerten.json: su punto a punto no reproduce el resultado oficial 6-7(11) 6-3 7-6(0)
+  20011020-M-Stuttgart_Masters-SF-Lleyton_Hewitt-Tommy_Haas.json: su punto a punto no reproduce el resultado oficial 2-6 6-3 6-4
+  20010304-M-San_Jose-F-Greg_Rusedski-Andre_Agassi.json: su punto a punto no reproduce el resultado oficial 6-3 6-4
+  20000609-M-Roland_Garros-SF-Magnus_Norman-Franco_Squillari.json: su punto a punto no reproduce el resultado oficial 6-1 6-4 6-3
+  20090605-M-Roland_Garros-SF-Robin_Soderling-Fernando_Gonzalez.json: su punto a punto no reproduce el resultado oficial 6-3 7-5 5-7 4-6 6-4
+  19930911-M-US_Open-SF-Pete_Sampras-Alexander_Volkov.json: su punto a punto no reproduce el resultado oficial 6-4 6-3 6-2
