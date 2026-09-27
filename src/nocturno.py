@@ -66,15 +66,14 @@ def comprobar():
 def main():
     sin_red = "--sin-red" in sys.argv
     cambio_repo = False
+    import calcular, profundo, construir_web
     if not sin_red:
         import descargar
         paso("Temporada en curso (TennisMyLife)", descargar.tml)
         cambio_repo = bool(paso("Repositorio golpe a golpe", descargar.mcp_repo))
-        domingo = dt.date.today().weekday() == 6
-        paso("Páginas nuevas de partidos anotados",
-             lambda: descargar.mcp_paginas(todo=domingo, maximo=150 if domingo else 60))
-    import calcular, profundo, construir_web
     paso("Cálculo de todas las temporadas", calcular.calcular, critico=True)
+    if not sin_red:   # necesita el archivo ya calculado para saber qué partidos nos interesan
+        paso("Partidos anotados en Tennis Abstract", descargar.mcp_paginas)
     r = paso("Análisis profundo", lambda: profundo.construir(recalcular_repo=cambio_repo or None), critico=True)
     print(f"  análisis profundos: {r[2]:,} · desde páginas web: {r[4]}")
     paso("Construcción de la web", construir_web.construir, critico=True)

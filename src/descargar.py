@@ -124,7 +124,33 @@ def mcp_repo():
 BASE_WEB = "https://tennisabstract.com/charting/"
 
 
-def mcp_paginas(todo=False, maximo=60, pausa=15):
+def pendientes(nombres, excluir):
+    """De todos los partidos masculinos de Tennis Abstract, los que están en NUESTRO archivo
+    y aún no tenemos. Así no se pide ni un Challenger, ni una previa, ni un junior."""
+    from profundo import Archivo
+    arch = pd.read_parquet(D / "calculado.parquet", columns=["fecha", "anio", "tourney_name", "round", "winner_name", "loser_name"])
+    A = Archivo(arch)
+    actual = int(arch.anio.max())
+    out = []
+    for n in nombres:
+        if n[:-5] in excluir:
+            continue
+        p = n[:-5].split("-")                 # AAAAMMDD-M-torneo(-con-guiones)-ronda-jugador1-jugador2
+        if len(p) < 6:
+            continue
+        try:
+            fecha = pd.Timestamp(p[0])
+        except Exception:
+            continue
+        if A.candidatos(p[-2].replace("_", " "), p[-1].replace("_", " "), fecha, p[-3], "-".join(p[2:-3])):
+            out.append(n)
+    # primero la temporada en curso, de lo más antiguo a lo más reciente; después el resto
+    out.sort(key=lambda n: (int(n[:4]) < actual, n))
+    return out
+
+
+def mcp_paginas(maximo=600, pausa=5):
+    """Baja TODAS las páginas de partidos anotados que falten, en tandas de `maximo`."""
     if not CONTACTO:
         print("  [páginas] falta el secreto CONTACTO; no se leen páginas de Tennis Abstract")
         return
@@ -132,18 +158,11 @@ def mcp_paginas(todo=False, maximo=60, pausa=15):
     carpeta.mkdir(exist_ok=True)
     robots = urllib.robotparser.RobotFileParser("https://tennisabstract.com/robots.txt")
     robots.read()
-    lista_url = BASE_WEB if todo else BASE_WEB + "recent.html"
-    if not robots.can_fetch(AGENTE, lista_url):
+    if not robots.can_fetch(AGENTE, BASE_WEB):
         print("  [páginas] el robots.txt no permite leer la lista; se omite")
         return
-    lista = get(lista_url).decode("utf-8", "ignore")
-    desde = temporada_actual() - 1
-    vistos = set()
-    nombres = []
-    for n in re.findall(r"(\d{8}-M-[A-Za-z0-9_.\-]+?\.html)", lista):
-        if n not in vistos and int(n[:4]) >= desde:
-            vistos.add(n)
-            nombres.append(n)
+    lista = get(BASE_WEB).decode("utf-8", "ignore")          # lista completa: una sola petición
+    nombres = sorted(set(re.findall(r"(\d{8}-M-[A-Za-z0-9_.\-]+?\.html)", lista)))
     # páginas que llegaron pero no se pudieron entender: se apartan 14 días y se reintentan
     # (pueden ser partidos a medio anotar). Los fallos de conexión NO se apuntan: se reintentan mañana.
     fallos = carpeta / "_fallos.txt"
@@ -154,13 +173,11 @@ def mcp_paginas(todo=False, maximo=60, pausa=15):
             partes = linea.split()
             if len(partes) == 2:
                 registro[partes[0]] = dt.date.fromisoformat(partes[1])
-    ya_fallados = {n for n, f in registro.items() if (hoy - f).days < 14}
-    # lo que ya trae el repositorio del proyecto no se vuelve a pedir
     repo = D / "profundo_repo.json"
-    del_repo = {v["deep"]["mid"] for v in json.load(open(repo)).values()} if repo.exists() else set()
-    nuevos = [n for n in nombres if n[:-5] not in del_repo
-              and not (carpeta / n.replace(".html", ".json")).exists() and n not in ya_fallados]
-    nuevos.sort()           # de lo más antiguo a lo más reciente: primero lo que lleva más tiempo esperando
+    excluir = {v["deep"]["mid"] for v in json.load(open(repo)).values()} if repo.exists() else set()
+    excluir |= {f.stem for f in carpeta.glob("*.json")}                      # ya convertidas
+    excluir |= {n[:-5] for n, f in registro.items() if (hoy - f).days < 14}  # apartadas
+    nuevos = pendientes(nombres, excluir)
     hechos = 0
     for n in nuevos[:maximo]:
         url = BASE_WEB + n
@@ -183,5 +200,5 @@ def mcp_paginas(todo=False, maximo=60, pausa=15):
             print(f"  [páginas] {n} no se pudo interpretar ({e}); se reintentará dentro de 14 días")
     fallos.write_text("\n".join(f"{n} {f.isoformat()}" for n, f in sorted(registro.items())))
     resto = max(0, len(nuevos) - maximo)
-    print(f"  [páginas] {'lista completa' if todo else 'novedades'}: {len(nombres)} partidos masculinos recientes · "
-          f"nuevos convertidos {hechos}" + (f" · quedan {resto} para otra noche" if resto else ""))
+    print(f"  [páginas] partidos masculinos en Tennis Abstract: {len(nombres):,} · de nuestro archivo y aún sin tener: "
+          f"{len(nuevos):,} · convertidos ahora: {hechos}" + (f" · quedan {resto} para la próxima ejecución" if resto else " · al día"))

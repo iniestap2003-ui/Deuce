@@ -84,7 +84,9 @@ def limpiar(df):
     inf["stats_vaciadas_total"] = int(malo.sum())
 
     antes = len(df)
-    df = df.drop_duplicates(subset=["tourney_name", "tourney_date", "winner_id", "loser_id", "score"])
+    # la RONDA forma parte de la clave: en las Finales ATP dos jugadores pueden cruzarse en
+    # la fase de grupos y en la final con el mismo marcador (Sinner-Fritz 2024, 6-4 6-4 las dos veces)
+    df = df.drop_duplicates(subset=["tourney_name", "tourney_date", "winner_id", "loser_id", "score", "round"])
     inf["duplicados"] = antes - len(df)
     inf["salida"] = len(df)
     return df.reset_index(drop=True), inf

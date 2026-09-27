@@ -50,30 +50,55 @@ def pct(x):
 # ----------------------------------------------------------------------------
 # emparejar partidos anotados con el archivo
 # ----------------------------------------------------------------------------
-def emparejar(arch, mcp):
-    arch = arch.assign(kw=arch.winner_name.map(norm), kl=arch.loser_name.map(norm), kt=arch.tourney_name.map(ntor))
-    por_par = {}
-    for i, r in arch[["kw", "kl"]].iterrows():
-        por_par.setdefault(frozenset((r.kw, r.kl)), []).append(i)
-    out, usados = {}, set()
-    for _, r in mcp.iterrows():
-        cand = por_par.get(frozenset((norm(r["Player 1"]), norm(r["Player 2"]))), [])
-        if not cand:
+def letras(s):
+    """'Felix Auger-Aliassime' y 'Felix_Auger_Aliassime' -> 'felixaugeraliassime'."""
+    s = unicodedata.normalize("NFKD", str(s)).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z]", "", s)
+
+
+def tor_parecido(a, b):
+    return bool(a) and bool(b) and (a[:5] == b[:5] or a[:5] in b or b[:5] in a)
+
+
+class Archivo:
+    """Índice del archivo por pareja de jugadores, para emparejar partidos anotados."""
+    def __init__(self, arch):
+        self.por_par = {}
+        for i, f, t, r, w, l in zip(arch.index, arch.fecha, arch.tourney_name, arch["round"], arch.winner_name, arch.loser_name):
+            self.por_par.setdefault(frozenset((letras(w), letras(l))), []).append((i, f, ntor(t), r))
+
+    def candidatos(self, p1, p2, fecha, ronda, torneo):
+        """Partidos del archivo que pueden ser este, con su puntuación.
+        Hace falta que coincida la ronda o el torneo; más allá de 30 días, el torneo sí o sí
+        (el proyecto golpe a golpe tiene alguna fecha desviada)."""
+        kt, out = ntor(torneo), []
+        for i, f, t, r in self.por_par.get(frozenset((letras(p1), letras(p2))), []):
+            dias = abs((f - fecha).days)
+            if dias > 60:
+                continue
+            ts, rs = tor_parecido(kt, t), bool(ronda) and ronda == r
+            if not (ts or rs) or (dias > 30 and not ts):
+                continue
+            out.append((3 * ts + 2 * rs - dias / 30, i))
+        return out
+
+
+def asignar(ofertas):
+    """ofertas: [(puntuación, id_anotado, índice_archivo)]. Reparto uno a uno, de la mejor
+    pareja a la peor, para que un cruce repetido no se quede con el partido equivocado."""
+    usados_a, usados_m, out = set(), set(), {}
+    for s, mid, i in sorted(ofertas, key=lambda x: -x[0]):
+        if mid in usados_m or i in usados_a:
             continue
-        c = arch.loc[cand]
-        c = c[(c.fecha - r.f).dt.days.abs() <= 30]            # misma época
-        if len(c) > 1:
-            t = c[c.kt.apply(lambda k: k[:5] == r.kt[:5] or r.kt[:5] in k or k[:5] in r.kt)]
-            c = t if len(t) else c
-        if len(c) > 1 and "round" in c:
-            t = c[c["round"] == r.ronda]
-            c = t if len(t) else c
-        if len(c) > 1:
-            c = c.iloc[[(c.fecha - r.f).dt.days.abs().argmin()]]
-        if len(c) == 1 and c.index[0] not in usados:
-            usados.add(c.index[0])
-            out[r.match_id] = c.index[0]
+        usados_m.add(mid); usados_a.add(i); out[mid] = i
     return out
+
+
+def emparejar(arch, mcp):
+    A = Archivo(arch)
+    ofertas = [(s, mid, i) for mid, p1, p2, f, ro, t in zip(mcp.match_id, mcp.p1, mcp.p2, mcp.f, mcp.ronda, mcp.tor)
+               for s, i in A.candidatos(p1, p2, f, ro, t)]
+    return asignar(ofertas)
 
 
 # ----------------------------------------------------------------------------
@@ -275,7 +300,9 @@ def construir(recalcular_repo=None):
         m["f"] = pd.to_datetime(m.match_id.str[:8], format="%Y%m%d", errors="coerce")
         m = m[m.f.notna() & (m.f.dt.year >= arch.fecha.dt.year.min())]
         partes = m.match_id.str.split("-")
-        m["kt"], m["ronda"] = partes.str[2].map(ntor), partes.str[3]
+        m["ronda"] = partes.str[-3]                               # el torneo puede llevar guiones:
+        m["tor"] = partes.apply(lambda x: "-".join(x[2:-3]))     # se cuenta desde el final
+        m["p1"], m["p2"] = m["Player 1"], m["Player 2"]
         pares = emparejar(arch, m)
         mids = list(pares)
         T = tablas(mids)
@@ -310,10 +337,8 @@ def construir(recalcular_repo=None):
     pag = 0
     carpeta = D / "mcp_paginas"
     if carpeta.exists():
-        A = arch.assign(kw=arch.winner_name.map(norm), kl=arch.loser_name.map(norm), kt=arch.tourney_name.map(ntor))
-        por_par = {}
-        for i2, r in A[["kw", "kl"]].iterrows():
-            por_par.setdefault((r.kw, r.kl), []).append(i2)
+        A = Archivo(arch)
+        paginas, ofertas = {}, []
         for fh in sorted(carpeta.glob("*.json")) + sorted(carpeta.glob("*.html")):
             try:
                 if fh.suffix == ".json":
@@ -323,15 +348,11 @@ def construir(recalcular_repo=None):
                 fecha = pd.Timestamp(fh.name[:8])            # la fecha va en el nombre del archivo
             except Exception:
                 continue
-            cand = A.loc[por_par.get((norm(meta["ganador"]), norm(meta["perdedor"])), [])]
-            cand = cand[((cand.fecha - fecha).dt.days.abs() <= 30) & (cand["round"] == meta["ronda"])]
-            if len(cand) > 1:                                # el nombre del torneo solo desempata
-                t = ntor(meta["torneo"])
-                c2 = cand[cand.kt.apply(lambda k: k[:5] == t[:5] or t[:5] in k or k[:5] in t)]
-                cand = c2 if len(c2) else cand
-            if len(cand) != 1:
-                continue
-            r = cand.iloc[0]
+            paginas[fh.name] = (meta, deep, nv)
+            ofertas += [(s, fh.name, i) for s, i in A.candidatos(meta["ganador"], meta["perdedor"], fecha, meta["ronda"], meta["torneo"])]
+        for nombre, i in asignar(ofertas).items():
+            meta, deep, nv = paginas[nombre]
+            r = arch.loc[i]
             if cuadra(deep, r.score):                        # contra el resultado OFICIAL del archivo
                 out[clave(r.fecha, r.winner_name, r.loser_name, r["round"])] = {"deep": deep, "nv": nv}
                 pag += 1

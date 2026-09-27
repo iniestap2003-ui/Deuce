@@ -18,14 +18,107 @@ Se hace una sola vez. Unos veinte o treinta minutos. Después, la web se actuali
 3. Espera a que terminen de subir. El archivo más pesado, `datos/profundo_repo.json`, ocupa unos 15 MB.
 4. Abajo, pulsa **Commit changes**.
 
-**Comprobación importante.** Los nombres que empiezan por punto se esconden en muchos ordenadores y a veces no se suben. Mira la lista de archivos del repositorio y comprueba que aparece la carpeta **`.github`**. Si no está, créala a mano:
+### Comprobar los dos archivos que empiezan por punto
 
-1. Pulsa **Add file → Create new file**.
-2. En el nombre escribe exactamente: `.github/workflows/nocturno.yml` (al escribir las barras, GitHub crea las carpetas solo).
-3. Abre en tu ordenador el archivo `.github/workflows/nocturno.yml` del paquete con el Bloc de notas, copia todo su contenido y pégalo.
-4. Pulsa **Commit changes**.
+Hay dos archivos cuyo nombre empieza por un punto: la carpeta **`.github`** y el archivo **`.gitignore`**. Muchos ordenadores esconden ese tipo de archivos, así que a veces no se suben al arrastrar. Hay que comprobarlo.
 
-Haz lo mismo con `.gitignore` si tampoco aparece.
+Mira la lista de archivos del repositorio en GitHub, arriba del todo, junto a `README.md` y `GUIA.md`.
+
+**Si ves `.github` y `.gitignore` en la lista**, no tienes que hacer nada: pasa al punto 3.
+
+**Si falta `.github`**, créalo a mano. Es imprescindible: es la orden que le dice a GitHub que ejecute el robot cada mañana.
+
+1. Pulsa el botón **Add file** y elige **Create new file**.
+2. En la casilla del nombre, arriba, escribe exactamente `.github/workflows/nocturno.yml`. Al escribir cada barra, GitHub convierte lo anterior en una carpeta: es normal que el texto se mueva.
+3. En el cuadro grande de abajo, pega **todo** este texto, tal cual, respetando los espacios del principio de cada línea:
+
+```yaml
+name: Actualización nocturna
+
+on:
+  schedule:
+    - cron: "0 6 * * *"      # 06:00 UTC · 08:00 en Murcia en verano, 07:00 en invierno
+  workflow_dispatch:           # botón para lanzarlo a mano
+
+permissions:
+  contents: write              # guardar los datos nuevos en el repositorio
+  pages: write                 # publicar la web
+  id-token: write
+
+concurrency:
+  group: deuce
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    environment:
+      name: github-pages
+      url: ${{ steps.publicar.outputs.page_url }}
+    steps:
+      - name: Descargar el proyecto
+        uses: actions/checkout@v6
+
+      - name: Preparar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Instalar librerías
+        run: pip install pandas pyarrow numpy
+
+      - name: Descargar, calcular y construir
+        env:
+          CONTACTO: ${{ secrets.CONTACTO }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python src/nocturno.py
+
+      - name: Guardar los datos nuevos
+        run: |
+          git config user.name "deuce-robot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add datos/tml datos/estado.json datos/profundo_repo.json
+          [ -d datos/mcp_paginas ] && git add datos/mcp_paginas
+          [ -f datos/mcp_sha.txt ] && git add datos/mcp_sha.txt
+          git diff --cached --quiet || git commit -m "Datos del $(date -u +%F)"
+          git push
+
+      - name: Preparar la publicación
+        uses: actions/configure-pages@v5
+
+      - name: Empaquetar la web
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: web
+
+      - name: Publicar
+        id: publicar
+        uses: actions/deploy-pages@v4
+```
+
+4. Pulsa el botón verde **Commit changes…**. En la ventana que se abre, deja marcada la opción **Commit directly to the main branch** y pulsa otra vez **Commit changes**.
+
+**Si falta `.gitignore`**, créalo igual. No es imprescindible, porque el robot ya sabe qué guardar y qué no, pero es una red de seguridad: le dice a GitHub que nunca guarde en el repositorio los archivos pesados que se fabrican cada noche.
+
+1. Vuelve a la página principal del repositorio pulsando su nombre, **deuce**, arriba a la izquierda.
+2. Pulsa **Add file** y elige **Create new file**.
+3. En la casilla del nombre escribe exactamente `.gitignore`: con el punto delante, sin nada detrás.
+4. En el cuadro grande, pega este texto:
+
+```
+# se generan cada noche, no se guardan
+web/
+datos/mcp/
+datos/calculado.parquet
+datos/profundo.json
+datos/constantes.json
+__pycache__/
+```
+
+5. Pulsa **Commit changes…** y, en la ventana, otra vez **Commit changes**.
+
+Al terminar, vuelve a la página principal del repositorio y comprueba que ya aparecen los dos.
 
 ## 3. Activar la web
 
@@ -48,13 +141,13 @@ Si no lo pones, la web se actualiza igual con todo lo demás, pero no incorpora 
 
 1. Pulsa la pestaña **Actions**. Si GitHub pregunta si quieres activar los flujos de trabajo, acepta.
 2. En la izquierda, **Actualización nocturna**.
-3. A la derecha, **Run workflow**. Marca la casilla **Repasar la lista completa de partidos anotados** (así recoge de una vez los partidos de junio a septiembre que el repositorio aún no tiene) y pulsa el botón verde.
-4. Tardará entre diez minutos y media hora. Cuando termine, verás un círculo verde.
+3. A la derecha, **Run workflow** y luego el botón verde **Run workflow**.
+4. Tardará en torno a una hora la primera vez. Cuando termine, verás un círculo verde.
 5. Pulsa sobre la ejecución y, en el recuadro **actualizar**, aparece el enlace a la web. Ya está publicada.
 
-**Por qué hace falta esta primera ejecución con la casilla marcada.** El repositorio descargable del proyecto golpe a golpe llega hasta el 21 de mayo de 2026. Todo lo anotado después (Roland Garros entero, la hierba, el verano americano, el US Open) solo está en la web de Tennis Abstract, y el robot tiene que ir a leerlo página a página. Hasta que no lo haga, esos torneos aparecen en Deuce sin análisis profundo.
+**Qué hace esta primera vez.** El repositorio descargable del proyecto golpe a golpe llega hasta el 21 de mayo de 2026. Todo lo anotado después (Roland Garros, la hierba, el verano americano, el US Open), y también los partidos antiguos que los voluntarios han anotado últimamente, solo está en la web de Tennis Abstract. El robot mira su lista completa, se queda con **todos los partidos masculinos que estén en nuestro archivo y aún no tengamos**, y los baja empezando por la temporada en curso, con cinco segundos de pausa entre cada uno.
 
-Con la casilla marcada, el robot recoge hasta 300 partidos, empezando por los más antiguos (Roland Garros primero), con doce segundos de pausa entre cada uno para no cargar la web de Tennis Abstract: algo menos de una hora. Si quedan más pendientes, los irá recogiendo las noches siguientes (60 cada noche, 150 los domingos). Los partidos que ya trae el repositorio no se vuelven a pedir.
+Baja como mucho 600 por ejecución. Si al final del registro pone «quedan N para la próxima ejecución», puedes esperar a la mañana siguiente o pulsar otra vez **Run workflow** para acelerar. Cuando ponga «al día», ya los tienes todos. A partir de ahí, cada mañana solo baja los pocos que se hayan anotado el día anterior.
 
 ## 6. A partir de aquí
 
@@ -70,7 +163,25 @@ Cada mañana, a las 8:00 en verano y a las 7:00 en invierno (hora de Murcia), el
 
 GitHub puede retrasar las ejecuciones programadas unos minutos cuando está muy cargado. Es normal.
 
-**Si un torneo reciente sale sin análisis profundo** aunque en Tennis Abstract esté anotado, casi siempre es una de estas dos cosas: que falte el secreto `CONTACTO` (el robot no lee páginas sin él, y lo dice en el registro de la ejecución), o que aún queden partidos pendientes de la puesta al día. Lanzar a mano una ejecución con la casilla marcada lo resuelve.
+**Si un partido sale sin análisis profundo** aunque en Tennis Abstract esté anotado, casi siempre es una de estas cosas: que falte el secreto `CONTACTO` (el robot no lee páginas sin él, y lo dice en el registro), que aún queden partidos pendientes de la puesta al día (el registro dice «quedan N»), o que el partido se haya anotado solo en parte, en cuyo caso no pasa el control de calidad y no entra. Pulsar **Run workflow** resuelve las dos primeras.
+
+---
+
+## 7. Cómo subir cambios de diseño o de cálculo
+
+Cuando me pidas cambios en la web, te daré un paquete pequeño llamado `cambios.zip` con solo los archivos que hayan cambiado, ya dentro de sus carpetas.
+
+1. Descomprime `cambios.zip` en tu ordenador.
+2. En la página principal de tu repositorio, pulsa **Add file → Upload files**.
+3. Arrastra **las carpetas** que haya dentro (por ejemplo `plantilla` o `src`). GitHub sustituye los archivos que tengan el mismo nombre en la misma carpeta y deja el resto como estaba.
+4. Pulsa **Commit changes**.
+5. Si quieres verlo publicado ya, ve a **Actions → Actualización nocturna → Run workflow**. Si no, se publicará solo a la mañana siguiente.
+
+Antes de cada paquete verás el cambio aquí, en la vista previa de Claude, para que lo apruebes.
+
+## 8. ¿Quién puede ver la web?
+
+Cualquiera que tenga el enlace `tuusuario.github.io/deuce`, desde cualquier ordenador o móvil, sin cuenta de GitHub ni nada que instalar. Todo lo de esta guía es solo para ti y solo una vez. Tu repositorio (`github.com/tuusuario/deuce`) es la cocina; la web es lo que ven los demás.
 
 ---
 
