@@ -1,0 +1,68 @@
+name: Actualización nocturna
+
+on:
+  schedule:
+    - cron: "0 6 * * *"      # 06:00 UTC · 08:00 en Murcia en verano, 07:00 en invierno
+  workflow_dispatch:           # botón para lanzarlo a mano
+    inputs:
+      todo:
+        description: "Repasar la lista completa de partidos anotados"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write              # guardar los datos nuevos en el repositorio
+  pages: write                 # publicar la web
+  id-token: write
+
+concurrency:
+  group: deuce
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    environment:
+      name: github-pages
+      url: ${{ steps.publicar.outputs.page_url }}
+    steps:
+      - name: Descargar el proyecto
+        uses: actions/checkout@v6
+
+      - name: Preparar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Instalar librerías
+        run: pip install pandas pyarrow numpy
+
+      - name: Descargar, calcular y construir
+        env:
+          CONTACTO: ${{ secrets.CONTACTO }}
+          TODO: ${{ inputs.todo }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python src/nocturno.py
+
+      - name: Guardar los datos nuevos
+        run: |
+          git config user.name "deuce-robot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add datos/tml datos/estado.json datos/profundo_repo.json
+          [ -d datos/mcp_paginas ] && git add datos/mcp_paginas
+          [ -f datos/mcp_sha.txt ] && git add datos/mcp_sha.txt
+          git diff --cached --quiet || git commit -m "Datos del $(date -u +%F)"
+          git push
+
+      - name: Preparar la publicación
+        uses: actions/configure-pages@v5
+
+      - name: Empaquetar la web
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: web
+
+      - name: Publicar
+        id: publicar
+        uses: actions/deploy-pages@v4
