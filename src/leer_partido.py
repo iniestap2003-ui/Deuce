@@ -15,6 +15,8 @@ Convenciones de la página, comprobadas con la final del US Open 2026:
 """
 import re
 import html as H
+
+VERSION = "2"   # si cambia, se vuelven a intentar las páginas que no se entendieron
 from functools import lru_cache
 
 
@@ -166,7 +168,13 @@ def leer(h):
     anio, torneo, ronda, p1, p2 = tm.groups()
     res = re.search(r"<b>([^<]*?) d\. ([^<]*?) ([0-9][^<]*)</b>", h)
     ganador, perdedor, marcador = res.group(1).strip(), res.group(2).strip(), res.group(3).strip()
-    ini = {p1: "".join(w[0] for w in p1.split()), p2: "".join(w[0] for w in p2.split())}
+    # abreviaturas tal como las escribe la página ("BS", "AZ"...), en el orden del título.
+    # No se deducen del nombre: con nombres de tres palabras la web puede abreviar distinto.
+    cab = _filas(_var(h, "rallyoutcomes"))[0]
+    abr = [m.group(1) for c in cab for m in [re.match(r"(.+?): W", c)] if m]
+    if len(abr) != 2:
+        abr = ["".join(w[0] for w in p1.split()), "".join(w[0] for w in p2.split())]
+    ini = {p1: abr[0], p2: abr[1]}
     lado = {p1: "w" if p1 == ganador else "l", p2: "w" if p2 == ganador else "l"}
     bo = 5 if len(re.findall(r"\d+-\d+", re.sub(r"\(\d+\)", "", marcador))) > 3 or torneo in (
         "Australian Open", "Roland Garros", "Wimbledon", "US Open") else 3

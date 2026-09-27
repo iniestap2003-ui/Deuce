@@ -24,12 +24,14 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
-from leer_partido import leer
+from leer_partido import leer, VERSION
 
 RAIZ = Path(__file__).resolve().parent.parent
 D = RAIZ / "datos"
 CONTACTO = os.environ.get("CONTACTO", "").strip()
-AGENTE = f"Deuce/1.0 (web de analisis de tenis sin animo de lucro; contacto: {CONTACTO or 'sin contacto'})"
+AGENTE = f"Mozilla/5.0 (compatible; DeuceBot/1.0; web de tenis sin animo de lucro; +mailto:{CONTACTO or 'sin-contacto'})"
+# reglas publicadas en https://tennisabstract.com/robots.txt (se usan si no se puede leer en el momento)
+ROBOTS_CONOCIDO = "User-agent: *\nDisallow: /jsfrags/\nDisallow: /jsmatches/\nDisallow: /jsplayers/\n"
 
 
 def get(url, timeout=90):
@@ -149,36 +151,71 @@ def pendientes(nombres, excluir):
     return out
 
 
+def leer_robots(informe):
+    """El robots.txt se lee con NUESTRA identificación. La herramienta estándar de Python se presenta
+    con un nombre genérico; si la web se lo rechaza, interpreta que está prohibido TODO y el robot
+    se quedaría sin leer ninguna página sin decir nada."""
+    rp = urllib.robotparser.RobotFileParser("https://tennisabstract.com/robots.txt")
+    try:
+        rp.parse(get("https://tennisabstract.com/robots.txt", timeout=30).decode("utf-8", "ignore").splitlines())
+        informe.append("robots.txt: leído")
+    except Exception as e:
+        rp.parse(ROBOTS_CONOCIDO.splitlines())
+        informe.append(f"robots.txt: no se pudo leer ({e}); se usan sus reglas conocidas")
+    return rp
+
+
 def mcp_paginas(maximo=600, pausa=5):
-    """Baja TODAS las páginas de partidos anotados que falten, en tandas de `maximo`."""
-    if not CONTACTO:
-        print("  [páginas] falta el secreto CONTACTO; no se leen páginas de Tennis Abstract")
-        return
+    """Baja TODAS las páginas de partidos anotados que falten, en tandas de `maximo`.
+    Deja un informe legible en datos/mcp_paginas/_diagnostico.txt."""
     carpeta = D / "mcp_paginas"
     carpeta.mkdir(exist_ok=True)
-    robots = urllib.robotparser.RobotFileParser("https://tennisabstract.com/robots.txt")
-    robots.read()
-    if not robots.can_fetch(AGENTE, BASE_WEB):
-        print("  [páginas] el robots.txt no permite leer la lista; se omite")
+    inf = [f"Informe del robot · {dt.datetime.now():%Y-%m-%d %H:%M}"]
+    try:
+        _mcp_paginas(carpeta, maximo, pausa, inf)
+    except Exception as e:
+        inf.append(f"ERROR inesperado: {type(e).__name__}: {e}")
+        raise
+    finally:
+        (carpeta / "_diagnostico.txt").write_text("\n".join(inf) + "\n", encoding="utf-8")
+        print("  [páginas] " + "\n  [páginas] ".join(inf[1:]))
+
+
+def _mcp_paginas(carpeta, maximo, pausa, inf):
+    if not CONTACTO:
+        inf.append("FALTA EL SECRETO CONTACTO: sin él no se lee ninguna página de Tennis Abstract.")
         return
-    lista = get(BASE_WEB).decode("utf-8", "ignore")          # lista completa: una sola petición
+    robots = leer_robots(inf)
+    if not robots.can_fetch(AGENTE, BASE_WEB):
+        inf.append("el robots.txt no permite leer la lista de partidos; no se descarga nada")
+        return
+    try:
+        lista = get(BASE_WEB).decode("utf-8", "ignore")          # lista completa: una sola petición
+    except Exception as e:
+        inf.append(f"NO SE PUDO LEER LA LISTA DE PARTIDOS de Tennis Abstract: {e}")
+        return
     nombres = sorted(set(re.findall(r"(\d{8}-M-[A-Za-z0-9_.\-]+?\.html)", lista)))
-    # páginas que llegaron pero no se pudieron entender: se apartan 14 días y se reintentan
-    # (pueden ser partidos a medio anotar). Los fallos de conexión NO se apuntan: se reintentan mañana.
+    inf.append(f"lista de Tennis Abstract: {len(lista)//1024} KB · partidos masculinos: {len(nombres):,}")
+    # páginas que llegaron pero no se pudieron entender: se apartan 14 días (pueden estar a medio anotar).
+    # Si cambia la versión del lector, se olvidan y se reintentan. Los fallos de conexión no se apuntan.
     fallos = carpeta / "_fallos.txt"
     hoy = dt.date.today()
     registro = {}
     if fallos.exists():
-        for linea in fallos.read_text().split("\n"):
-            partes = linea.split()
-            if len(partes) == 2:
-                registro[partes[0]] = dt.date.fromisoformat(partes[1])
+        lineas = fallos.read_text().split("\n")
+        if lineas and lineas[0] == f"version {VERSION}":
+            for linea in lineas[1:]:
+                partes = linea.split()
+                if len(partes) == 2:
+                    registro[partes[0]] = dt.date.fromisoformat(partes[1])
     repo = D / "profundo_repo.json"
     excluir = {v["deep"]["mid"] for v in json.load(open(repo)).values()} if repo.exists() else set()
     excluir |= {f.stem for f in carpeta.glob("*.json")}                      # ya convertidas
     excluir |= {n[:-5] for n, f in registro.items() if (hoy - f).days < 14}  # apartadas
     nuevos = pendientes(nombres, excluir)
-    hechos = 0
+    rg = [n for n in nuevos if "Roland_Garros" in n and n.startswith(str(temporada_actual()))]
+    inf.append(f"de nuestro archivo y aún sin tener: {len(nuevos):,} (de Roland Garros {temporada_actual()}: {len(rg)})")
+    hechos, sin_red, no_leidas, ejemplos = 0, 0, 0, []
     for n in nuevos[:maximo]:
         url = BASE_WEB + n
         if not robots.can_fetch(AGENTE, url):
@@ -187,7 +224,8 @@ def mcp_paginas(maximo=600, pausa=5):
         try:
             html = get(url).decode("utf-8", "ignore")
         except Exception as e:
-            print(f"  [páginas] sin conexión con {n} ({e}); se reintenta la próxima vez")
+            sin_red += 1
+            if len(ejemplos) < 5: ejemplos.append(f"sin conexión con {n}: {e}")
             continue
         try:
             meta, deep, nv = leer(html)
@@ -196,9 +234,11 @@ def mcp_paginas(maximo=600, pausa=5):
             hechos += 1
             registro.pop(n, None)
         except Exception as e:
+            no_leidas += 1
             registro[n] = hoy
-            print(f"  [páginas] {n} no se pudo interpretar ({e}); se reintentará dentro de 14 días")
-    fallos.write_text("\n".join(f"{n} {f.isoformat()}" for n, f in sorted(registro.items())))
+            if len(ejemplos) < 5: ejemplos.append(f"no se pudo interpretar {n}: {type(e).__name__}: {e}")
+    fallos.write_text(f"version {VERSION}\n" + "\n".join(f"{n} {f.isoformat()}" for n, f in sorted(registro.items())))
     resto = max(0, len(nuevos) - maximo)
-    print(f"  [páginas] partidos masculinos en Tennis Abstract: {len(nombres):,} · de nuestro archivo y aún sin tener: "
-          f"{len(nuevos):,} · convertidos ahora: {hechos}" + (f" · quedan {resto} para la próxima ejecución" if resto else " · al día"))
+    inf.append(f"descargadas y convertidas: {hechos} · fallos de conexión: {sin_red} · no interpretadas: {no_leidas}")
+    inf += ["  " + e for e in ejemplos]
+    inf.append(f"quedan {resto} para la próxima ejecución" if resto else "AL DÍA: no falta ningún partido anotado de nuestro archivo")

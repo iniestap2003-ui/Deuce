@@ -1,26 +1,25 @@
 CÓMO SUBIR ESTOS CAMBIOS A GITHUB
 =================================
 
-Dentro de esta carpeta hay: la carpeta "src", la carpeta "datos", GUIA.md y este LEEME.txt.
-Los archivos nuevos SUSTITUYEN a los antiguos que tengan el mismo nombre. El resto de tu
-repositorio no se toca.
+Esta vez solo cambia la carpeta "src". Sus archivos SUSTITUYEN a los que ya tienes.
 
-1. Entra en tu repositorio en github.com (la página principal, donde ves la lista de archivos).
-2. Pulsa "Add file" y luego "Upload files".
-3. Arrastra a la ventana las carpetas "src" y "datos" y el archivo "GUIA.md".
-   OJO: arrastra lo que hay DENTRO de esta carpeta, no esta carpeta entera.
-   Si arrastraras la carpeta entera, GitHub crearía una carpeta nueva con otro nombre
-   y el robot seguiría usando los archivos antiguos.
-4. Espera a que suban (profundo_repo.json tarda un poco, ocupa unos 15 MB).
-5. Abajo, pulsa "Commit changes".
+1. En tu repositorio de github.com, pulsa "Add file" y luego "Upload files".
+2. Arrastra la carpeta "src" que hay DENTRO de esta carpeta (no esta carpeta entera).
+3. Pulsa "Commit changes".
+4. Ve a "Actions", pulsa "Actualización nocturna" y luego "Run workflow".
 
-Para comprobar que ha ido bien: en la página principal, junto a "src" y "datos", debe
-aparecer tu mensaje de cambios con la hora de hace un momento.
+CUANDO TERMINE, MIRA EL INFORME
+-------------------------------
+En tu repositorio, entra en la carpeta datos y luego en mcp_paginas, y abre el
+archivo _diagnostico.txt. Dice en castellano:
 
-6. Ve a la pestaña "Actions", pulsa "Actualización nocturna" y luego "Run workflow".
-7. Cuando termine, abre la ejecución, pulsa el paso "Descargar, calcular y construir" y
-   busca la línea que empieza por "[páginas]". Dice cuántos partidos anotados hay en
-   Tennis Abstract, cuántos faltaban y cuántos ha traído. Si pone "quedan N", vuelve a
-   pulsar "Run workflow" (o espera a mañana). Cuando ponga "al día", están todos.
+  - si pudo leer la lista de partidos de Tennis Abstract,
+  - cuántos partidos anotados faltaban (y cuántos de Roland Garros),
+  - cuántos ha descargado,
+  - y, si ha habido errores, los primeros cinco.
 
-No hace falta tocar la carpeta .github: la que ya tienes funciona con estos cambios.
+En la misma carpeta, _emparejamiento.txt dice cuántas de esas páginas se han
+casado con su partido del archivo y cuáles no pasan el control de calidad.
+
+Si Roland Garros sigue sin salir, copia el contenido de _diagnostico.txt y
+pégamelo en el chat: con eso sabré exactamente qué está pasando.

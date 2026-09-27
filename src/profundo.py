@@ -350,12 +350,21 @@ def construir(recalcular_repo=None):
                 continue
             paginas[fh.name] = (meta, deep, nv)
             ofertas += [(s, fh.name, i) for s, i in A.candidatos(meta["ganador"], meta["perdedor"], fecha, meta["ronda"], meta["torneo"])]
-        for nombre, i in asignar(ofertas).items():
+        asig = asignar(ofertas)
+        no_cuadra = []
+        for nombre, i in asig.items():
             meta, deep, nv = paginas[nombre]
             r = arch.loc[i]
             if cuadra(deep, r.score):                        # contra el resultado OFICIAL del archivo
                 out[clave(r.fecha, r.winner_name, r.loser_name, r["round"])] = {"deep": deep, "nv": nv}
                 pag += 1
+            else:
+                no_cuadra.append(f"{nombre}: su punto a punto no reproduce el resultado oficial {r.score}")
+        sin_pareja = [n for n in paginas if n not in asig]
+        (carpeta / "_emparejamiento.txt").write_text(
+            f"páginas convertidas: {len(paginas)} · emparejadas con el archivo: {len(asig)} · "
+            f"con análisis profundo: {pag}\n\nsin pareja en el archivo ({len(sin_pareja)}):\n  " + "\n  ".join(sin_pareja[:40]) +
+            f"\n\nno pasan el control de calidad ({len(no_cuadra)}):\n  " + "\n  ".join(no_cuadra[:40]) + "\n", encoding="utf-8")
     json.dump(out, open(D / "profundo.json", "w"), ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     return n_anot, emp, len(out), fallos, pag
 
