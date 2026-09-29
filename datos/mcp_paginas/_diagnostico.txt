@@ -1,11 +1,11 @@
-Informe del robot · 2026-09-28 12:51
+Informe del robot · 2026-09-29 12:06
 robots.txt: leído
-lista de Tennis Abstract: 2650 KB · partidos masculinos: 10,123
-de nuestro archivo y aún sin tener: 1,572 (de Roland Garros 2026: 0)
-descargadas y convertidas: 463 · fallos de conexión: 1 · no interpretadas: 136
-  no se pudo interpretar 19970603-M-Roland_Garros-QF-Magnus_Norman-Filip_Dewulf.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 19980726-M-Stuttgart_Outdoor-F-Gustavo_Kuerten-Karol_Kucera.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20120301-M-Delray_Beach-R16-Bernard_Tomic-Tim_Smyczek.html: IndexError: list index out of range
-  no se pudo interpretar 20120313-M-Indian_Wells_Masters-R32-Ryan_Harrison-Guillermo_Garcia_Lopez.html: IndexError: list index out of range
-  no se pudo interpretar 20120505-M-Belgrade-SF-Benoit_Paire-Pablo_Andujar.html: IndexError: list index out of range
-quedan 972 para la próxima ejecución
+lista de Tennis Abstract: 2651 KB · partidos masculinos: 10,126
+de nuestro archivo y aún sin tener: 976 (de Roland Garros 2026: 0)
+descargadas y convertidas: 546 · fallos de conexión: 1 · no interpretadas: 53
+  no se pudo interpretar 20260115-M-Auckland-QF-Jakub_Mensik-Giovanni_Mpetshi_Perricard.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  sin conexión con 20140710-M-Bastad-R16-Victor_Hanescu-David_Ferrer.html: HTTP Error 404: Not Found
+  no se pudo interpretar 20170917-M-Davis_Cup_World_Group_PO-RR-Karen_Khachanov-Marton_Fucsovics.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20171003-M-Beijing-R32-Grigor_Dimitrov-Damir_Dzumhur.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20171010-M-Shanghai_Masters-R32-Juan_Martin_Del_Potro-Andrey_Rublev.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+quedan 376 para la próxima ejecución

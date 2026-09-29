@@ -1,7 +1,7 @@
-páginas convertidas: 960 · emparejadas con el archivo: 960 · con análisis profundo: 950
+páginas convertidas: 1506 · emparejadas con el archivo: 1505 · con análisis profundo: 1495
 
-sin pareja en el archivo (0):
-  
+sin pareja en el archivo (1):
+  20190331-M-Marbella_CH-F-Benoit_Paire-Pablo_Andujar.json
 
 no pasan el control de calidad (10):
   20010312-M-Indian_Wells-QF-Nicolas_Lapentti-Andre_Agassi.json: su punto a punto no reproduce el resultado oficial 6-1 6-2
