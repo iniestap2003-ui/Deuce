@@ -1,11 +1,11 @@
-Informe del robot · 2026-09-29 12:06
+Informe del robot · 2026-09-30 11:53
 robots.txt: leído
-lista de Tennis Abstract: 2651 KB · partidos masculinos: 10,126
-de nuestro archivo y aún sin tener: 976 (de Roland Garros 2026: 0)
-descargadas y convertidas: 546 · fallos de conexión: 1 · no interpretadas: 53
-  no se pudo interpretar 20260115-M-Auckland-QF-Jakub_Mensik-Giovanni_Mpetshi_Perricard.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+lista de Tennis Abstract: 2652 KB · partidos masculinos: 10,128
+de nuestro archivo y aún sin tener: 380 (de Roland Garros 2026: 0)
+descargadas y convertidas: 355 · fallos de conexión: 1 · no interpretadas: 24
   sin conexión con 20140710-M-Bastad-R16-Victor_Hanescu-David_Ferrer.html: HTTP Error 404: Not Found
-  no se pudo interpretar 20170917-M-Davis_Cup_World_Group_PO-RR-Karen_Khachanov-Marton_Fucsovics.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20171003-M-Beijing-R32-Grigor_Dimitrov-Damir_Dzumhur.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20171010-M-Shanghai_Masters-R32-Juan_Martin_Del_Potro-Andrey_Rublev.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-quedan 376 para la próxima ejecución
+  no se pudo interpretar 20220717-M-Newport-F-Alexander_Bublik-Maxime_Cressy.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20220906-M-US_Open-QF-Karen_Khachanov-Nick_Kyrgios.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20221023-M-Naples-F-Lorenzo_Musetti-Matteo_Berrettini.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20221103-M-Paris_Masters-R16-Frances_Tiafoe-Alex_De_Minaur.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+AL DÍA: no falta ningún partido anotado de nuestro archivo

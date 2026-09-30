@@ -1,16 +1,24 @@
-páginas convertidas: 1506 · emparejadas con el archivo: 1505 · con análisis profundo: 1495
+páginas convertidas: 1861 · emparejadas con el archivo: 1860 · con análisis profundo: 1842
 
 sin pareja en el archivo (1):
   20190331-M-Marbella_CH-F-Benoit_Paire-Pablo_Andujar.json
 
-no pasan el control de calidad (10):
+no pasan el control de calidad (18):
   20010312-M-Indian_Wells-QF-Nicolas_Lapentti-Andre_Agassi.json: su punto a punto no reproduce el resultado oficial 6-1 6-2
+  20230807-M-Canada_Masters-R64-Gregoire_Barrere-Matteo_Berrettini.json: su punto a punto no reproduce el resultado oficial 6-4 6-3
   20170224-M-Rio_de_Janeiro-QF-Diego_Schwartzman-Dominic_Thiem.json: su punto a punto no reproduce el resultado oficial 6-2 6-3
+  20241025-M-Basel-QF-Denis_Shapovalov-Giovanni_Mpetshi_Perricard.json: su punto a punto no reproduce el resultado oficial 6-7(7) 6-3 7-6(3)
   20000812-M-Cincinnati_Masters-SF-Tim_Henman-Gustavo_Kuerten.json: su punto a punto no reproduce el resultado oficial 6-7(11) 6-3 7-6(0)
   20011020-M-Stuttgart_Masters-SF-Lleyton_Hewitt-Tommy_Haas.json: su punto a punto no reproduce el resultado oficial 2-6 6-3 6-4
+  20221029-M-Vienna-SF-Denis_Shapovalov-Borna_Coric.json: su punto a punto no reproduce el resultado oficial 7-6(4) 6-0
   20010304-M-San_Jose-F-Greg_Rusedski-Andre_Agassi.json: su punto a punto no reproduce el resultado oficial 6-3 6-4
   20120226-M-Marseille-F-Michael_Llodra-Juan_Martin_Del_Potro.json: su punto a punto no reproduce el resultado oficial 6-4 6-4
+  20220703-M-Wimbledon-R16-Jannik_Sinner-Carlos_Alcaraz.json: su punto a punto no reproduce el resultado oficial 6-1 6-4 6-7(8) 6-3
+  20240516-M-Rome_Masters-QF-Hubert_Hurkacz-Tommy_Paul.json: su punto a punto no reproduce el resultado oficial 7-5 3-6 6-3
   20000609-M-Roland_Garros-SF-Magnus_Norman-Franco_Squillari.json: su punto a punto no reproduce el resultado oficial 6-1 6-4 6-3
   20090605-M-Roland_Garros-SF-Robin_Soderling-Fernando_Gonzalez.json: su punto a punto no reproduce el resultado oficial 6-3 7-5 5-7 4-6 6-4
   19930911-M-US_Open-SF-Pete_Sampras-Alexander_Volkov.json: su punto a punto no reproduce el resultado oficial 6-4 6-3 6-2
+  20230412-M-Monte_Carlo_Masters-R32-Diego_Schwartzman-Jannik_Sinner.json: su punto a punto no reproduce el resultado oficial 6-2 6-4
   20150409-M-Casablanca-R16-Daniel_Gimeno_Traver-Mikhail_Kukushkin.json: su punto a punto no reproduce el resultado oficial 6-3 6-3
+  20251018-M-Six_Kings_Slam-F-Carlos_Alcaraz-Jannik_Sinner.json: su punto a punto no reproduce el resultado oficial 7-6(4) 7-5
+  20241020-M-Six_Kings_Slam-F-Jannik_Sinner-Carlos_Alcaraz.json: su punto a punto no reproduce el resultado oficial 6-7(6) 6-4 7-6(3)
