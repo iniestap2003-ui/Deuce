@@ -315,4 +315,5 @@ version 2
 20260805-M-Canada_Masters-R64-Tallon_Griekspoor-Alexander_Zverev.html 2026-09-27
 20260806-M-Canada_Masters-R32-Lorenzo_Musetti-Rafael_Jodar.html 2026-09-27
 20260830-M-US_Open-R128-Aleksandar_Vukic-Rei_Sakamoto.html 2026-09-27
+20260904-M-US_Open-R64-Learner_Tien-Gael_Monfils.html 2026-10-01
 20260911-M-US_Open-SF-Alexander_Zverev-Karen_Khachanov.html 2026-09-27

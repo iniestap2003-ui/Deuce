@@ -1,11 +1,8 @@
-Informe del robot · 2026-09-30 11:53
+Informe del robot · 2026-10-01 12:24
 robots.txt: leído
-lista de Tennis Abstract: 2652 KB · partidos masculinos: 10,128
-de nuestro archivo y aún sin tener: 380 (de Roland Garros 2026: 0)
-descargadas y convertidas: 355 · fallos de conexión: 1 · no interpretadas: 24
+lista de Tennis Abstract: 2653 KB · partidos masculinos: 10,135
+de nuestro archivo y aún sin tener: 7 (de Roland Garros 2026: 0)
+descargadas y convertidas: 5 · fallos de conexión: 1 · no interpretadas: 1
+  no se pudo interpretar 20260904-M-US_Open-R64-Learner_Tien-Gael_Monfils.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
   sin conexión con 20140710-M-Bastad-R16-Victor_Hanescu-David_Ferrer.html: HTTP Error 404: Not Found
-  no se pudo interpretar 20220717-M-Newport-F-Alexander_Bublik-Maxime_Cressy.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20220906-M-US_Open-QF-Karen_Khachanov-Nick_Kyrgios.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20221023-M-Naples-F-Lorenzo_Musetti-Matteo_Berrettini.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20221103-M-Paris_Masters-R16-Frances_Tiafoe-Alex_De_Minaur.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
 AL DÍA: no falta ningún partido anotado de nuestro archivo
