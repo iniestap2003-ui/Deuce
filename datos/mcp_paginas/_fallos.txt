@@ -109,6 +109,7 @@ version 2
 20130516-M-Rome_Masters-QF-Roger_Federer-Jerzy_Janowicz.html 2026-09-28
 20130524-M-Dusseldorf-SF-Jarkko_Nieminen-Igor_Sijsling.html 2026-09-28
 20130529-M-Roland_Garros-R64-Somdev_Devvarman-Roger_Federer.html 2026-09-28
+20130612-M-Halle-R16-Mikhail_Youzhny-Kei_Nishikori.html 2026-10-04
 20130616-M-Halle-F-Mikhail_Youzhny-Roger_Federer.html 2026-09-28
 20130616-M-Queens_Club-F-Andy_Murray-Marin_Cilic.html 2026-09-28
 20130622-M-s_Hertogenbosch-F-Nicolas_Mahut-Stan_Wawrinka.html 2026-09-28
