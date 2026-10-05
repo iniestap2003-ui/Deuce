@@ -85,6 +85,7 @@ version 2
 20110410-M-Houston-F-Kei_Nishikori-Ryan_Sweeting.html 2026-09-27
 20110527-M-Roland_Garros-R32-Roger_Federer-Janko_Tipsarevic.html 2026-09-27
 20111015-M-Shanghai_Masters-SF-David_Ferrer-Feliciano_Lopez.html 2026-09-27
+20120225-M-Marseille-SF-Jo_Wilfried_Tsonga-Juan_Martin_Del_Potro.html 2026-10-05
 20120301-M-Delray_Beach-R16-Bernard_Tomic-Tim_Smyczek.html 2026-09-28
 20120313-M-Indian_Wells_Masters-R32-Ryan_Harrison-Guillermo_Garcia_Lopez.html 2026-09-28
 20120505-M-Belgrade-SF-Benoit_Paire-Pablo_Andujar.html 2026-09-28
