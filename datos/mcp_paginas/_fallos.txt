@@ -9,6 +9,7 @@ version 2
 19920316-M-Indian_Wells_Masters-F-Andrei_Chesnokov-Michael_Chang.html 2026-09-27
 19920702-M-Wimbledon-QF-Andre_Agassi-Boris_Becker.html 2026-09-27
 19920705-M-Wimbledon-F-Andre_Agassi-Goran_Ivanisevic.html 2026-09-27
+19920720-M-Kitzbuhel-F-Alberto_Mancini-Pete_Sampras.html 2026-10-07
 19920908-M-US_Open-R16-Michael_Chang-Malivai_Washington.html 2026-09-27
 19930508-M-Hamburg_Masters-SF-Bernd_Karbacher-Andrei_Chesnokov.html 2026-09-27
 19931010-M-Sydney-F-Petr_Korda-Jaime_Yzaga.html 2026-09-27
