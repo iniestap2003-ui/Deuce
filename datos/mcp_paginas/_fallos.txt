@@ -69,6 +69,7 @@ version 2
 20050908-M-US_Open-QF-Roger_Federer-David_Nalbandian.html 2026-09-27
 20050918-M-Beijing-F-Rafael_Nadal-Guillermo_Coria.html 2026-09-27
 20061014-M-Vienna-SF-Andy_Roddick-Fernando_Gonzalez.html 2026-09-27
+20070115-M-Australian_Open-R128-Andy_Roddick-Jo_Wilfried_Tsonga.html 2026-10-09
 20070429-M-Barcelona-F-Rafael_Nadal-Guillermo_Canas.html 2026-09-27
 20070628-M-Wimbledon-R64-Roger_Federer-Juan_Martin_Del_Potro.html 2026-09-27
 20070707-M-Wimbledon-SF-Novak_Djokovic-Rafael_Nadal.html 2026-09-27
@@ -324,3 +325,4 @@ version 2
 20260904-M-US_Open-R64-Learner_Tien-Gael_Monfils.html 2026-10-01
 20260908-M-US_Open-QF-Alex_Michelsen-Frances_Tiafoe.html 2026-10-02
 20260911-M-US_Open-SF-Alexander_Zverev-Karen_Khachanov.html 2026-09-27
+20260924-M-Chengdu-R32-Alexander_Shevchenko-Hubert_Hurkacz.html 2026-10-09

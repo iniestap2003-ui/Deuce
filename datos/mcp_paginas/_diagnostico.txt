@@ -1,7 +1,9 @@
-Informe del robot · 2026-10-08 12:47
+Informe del robot · 2026-10-09 12:33
 robots.txt: leído
-lista de Tennis Abstract: 2658 KB · partidos masculinos: 10,154
-de nuestro archivo y aún sin tener: 1 (de Roland Garros 2026: 0)
-descargadas y convertidas: 0 · fallos de conexión: 1 · no interpretadas: 0
+lista de Tennis Abstract: 2661 KB · partidos masculinos: 10,174
+de nuestro archivo y aún sin tener: 12 (de Roland Garros 2026: 0)
+descargadas y convertidas: 9 · fallos de conexión: 1 · no interpretadas: 2
+  no se pudo interpretar 20260924-M-Chengdu-R32-Alexander_Shevchenko-Hubert_Hurkacz.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20070115-M-Australian_Open-R128-Andy_Roddick-Jo_Wilfried_Tsonga.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
   sin conexión con 20140710-M-Bastad-R16-Victor_Hanescu-David_Ferrer.html: HTTP Error 404: Not Found
 AL DÍA: no falta ningún partido anotado de nuestro archivo
