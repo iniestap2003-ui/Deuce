@@ -1,11 +1,11 @@
-Informe del robot · 2026-10-11 12:04
+Informe del robot · 2026-10-12 14:23
 robots.txt: leído
-lista de Tennis Abstract: 2662 KB · partidos masculinos: 10,178
-de nuestro archivo y aún sin tener: 105 (de Roland Garros 2026: 6)
-descargadas y convertidas: 0 · fallos de conexión: 1 · no interpretadas: 104
-  no se pudo interpretar 20260226-M-Acapulco-QF-Yibing_Wu-Flavio_Cobolli.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20260524-M-Roland_Garros-R128-Alexander_Blockx-Coleman_Wong.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20260524-M-Roland_Garros-R128-Damir_Dzumhur-Alejandro_Davidovich_Fokina.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20260525-M-Roland_Garros-R128-Hugo_Gaston-Gael_Monfils.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20260526-M-Roland_Garros-R128-Daniil_Medvedev-Adam_Walton.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+lista de Tennis Abstract: 2663 KB · partidos masculinos: 10,182
+de nuestro archivo y aún sin tener: 152 (de Roland Garros 2026: 0)
+descargadas y convertidas: 14 · fallos de conexión: 2 · no interpretadas: 136
+  no se pudo interpretar 20260508-M-Rome_Masters-R64-Zachary_Svajda-Casper_Ruud.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 19970603-M-Roland_Garros-QF-Magnus_Norman-Filip_Dewulf.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 19980726-M-Stuttgart_Outdoor-F-Gustavo_Kuerten-Karol_Kucera.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20120301-M-Delray_Beach-R16-Bernard_Tomic-Tim_Smyczek.html: IndexError: list index out of range
+  no se pudo interpretar 20120313-M-Indian_Wells_Masters-R32-Ryan_Harrison-Guillermo_Garcia_Lopez.html: IndexError: list index out of range
 AL DÍA: no falta ningún partido anotado de nuestro archivo
