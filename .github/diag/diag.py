@@ -9,7 +9,7 @@ nombres = [l.split()[0] for l in Path("datos/mcp_paginas/_fallos.txt").read_text
 # muestra repartida por años
 porano = collections.defaultdict(list)
 for n in nombres: porano[n[:4]].append(n)
-muestra = [n for a in sorted(porano) for n in porano[a][:4]]
+muestra = nombres   # todas las apartadas
 print("muestra", len(muestra), "de", len(nombres))
 fines = collections.Counter(); errores = collections.Counter(); ok = 0
 for i, n in enumerate(muestra):

@@ -110,6 +110,9 @@ def _modelo(pA, pB, bo):
     def set_(ga, gb, sa):
         if ga >= 6 and ga - gb >= 2: return 1.0
         if gb >= 6 and gb - ga >= 2: return 0.0
+        if ga == gb >= 7:   # set final sin desempate (8-8, 9-9...): gana quien se lleve dos juegos seguidos
+            hA, rA = juego(0, 0, pA), 1 - juego(0, 0, pB)
+            return hA * rA / (hA * rA + (1 - hA) * (1 - rA))
         if ga == 7 or gb == 7: return 1.0 if ga > gb else 0.0
         if ga == 6 and gb == 6: return tb(0, 0)
         pg = juego(0, 0, pA) if sa else 1 - juego(0, 0, pB)
@@ -235,6 +238,8 @@ def leer(h):
     bo = 5 if len(re.findall(r"\d+-\d+", re.sub(r"\(\d+\)", "", marcador))) > 3 or torneo in (
         "Australian Open", "Roland Garros", "Wimbledon", "US Open") else 3
 
+    if not _filas(_var(h, "overview")) and _filas(_var(h, "pointlog")):
+        raise PaginaIncompleta("la página solo trae el registro punto a punto, sin tablas de estadísticas")
     ov = _tabla(h, "overview")
     kp = _tabla(h, "keypoints", obligatoria=False)
     sn = _tabla(h, "serveNeut", obligatoria=False)
