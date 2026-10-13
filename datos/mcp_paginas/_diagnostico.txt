@@ -1,11 +1,11 @@
-Informe del robot · 2026-10-12 14:23
+Informe del robot · 2026-10-13 13:32
 robots.txt: leído
-lista de Tennis Abstract: 2663 KB · partidos masculinos: 10,182
-de nuestro archivo y aún sin tener: 152 (de Roland Garros 2026: 0)
-descargadas y convertidas: 14 · fallos de conexión: 2 · no interpretadas: 136
-  no se pudo interpretar 20260508-M-Rome_Masters-R64-Zachary_Svajda-Casper_Ruud.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 19970603-M-Roland_Garros-QF-Magnus_Norman-Filip_Dewulf.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 19980726-M-Stuttgart_Outdoor-F-Gustavo_Kuerten-Karol_Kucera.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20120301-M-Delray_Beach-R16-Bernard_Tomic-Tim_Smyczek.html: IndexError: list index out of range
-  no se pudo interpretar 20120313-M-Indian_Wells_Masters-R32-Ryan_Harrison-Guillermo_Garcia_Lopez.html: IndexError: list index out of range
+lista de Tennis Abstract: 2665 KB · partidos masculinos: 10,188
+de nuestro archivo y aún sin tener: 59 (de Roland Garros 2026: 0)
+descargadas y convertidas: 3 · fallos de conexión: 1 · no interpretadas: 55
+  no se pudo interpretar 20260115-M-Auckland-QF-Jakub_Mensik-Giovanni_Mpetshi_Perricard.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20000705-M-Wimbledon-QF-Mark_Philippoussis-Andre_Agassi.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  sin conexión con 20140710-M-Bastad-R16-Victor_Hanescu-David_Ferrer.html: HTTP Error 404: Not Found
+  no se pudo interpretar 20160613-M-Halle-R32-Lucas_Pouille-Kei_Nishikori.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
+  no se pudo interpretar 20170917-M-Davis_Cup_World_Group_PO-RR-Karen_Khachanov-Marton_Fucsovics.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
 AL DÍA: no falta ningún partido anotado de nuestro archivo
