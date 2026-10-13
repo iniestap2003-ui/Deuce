@@ -66,7 +66,10 @@ jobs:
           python-version: "3.12"
 
       - name: Instalar librerías
-        run: pip install pandas pyarrow numpy
+        run: pip install pandas pyarrow numpy pytest
+
+      - name: Pruebas
+        run: python -m pytest
 
       - name: Descargar, calcular y construir
         env:
@@ -153,6 +156,7 @@ Baja como mucho 600 por ejecución. Si al final del registro pone «quedan N par
 
 Cada mañana, a las 8:00 en verano y a las 7:00 en invierno (hora de Murcia), el robot:
 
+- pasa las pruebas automáticas de la carpeta `tests/` (si alguna falla, se detiene antes de tocar nada),
 - descarga los partidos del día anterior,
 - recalcula todo,
 - añade los partidos anotados golpe a golpe que hayan aparecido,
