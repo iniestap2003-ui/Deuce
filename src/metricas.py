@@ -61,6 +61,11 @@ def estructura(score):
     # margen del tiebreak: 7 menos los puntos del perdedor (más alto = más cómodo)
     margenes_tb = [7 - x[2] for x in s if x[2] is not None and x[0] > x[1]]
 
+    # --- set decisivo: el perdedor se quedó a un set (2-1 a tres sets, 3-2 a cinco).
+    #     Contar sets no basta: un 3-0 a cinco sets también tiene tres.
+    sets_g, sets_p = sum(1 for d in difs if d > 0), sum(1 for d in difs if d < 0)
+    decisivo = n > 1 and sets_p == sets_g - 1
+
     # --- roscos y sets en blanco ---
     roscos_dados = sum(1 for x in s if x[1] == 0)
     roscos_recibidos = sum(1 for x in s if x[0] == 0)
@@ -69,7 +74,7 @@ def estructura(score):
     # cada set aporta según lo cerca que estuvo; un 6-4 aporta más que un 6-1
     cercania = [max(0.0, 1 - abs(d) / 6) for d in difs]
     tension = 100 * float(np.mean(cercania))
-    if n == max(3, n) and n in (3, 5):     # llegó al set decisivo
+    if decisivo:
         tension = min(100.0, tension * 1.15)
 
     # --- VOLATILIDAD: ¿fue un partido estable o de vaivenes? ---
@@ -85,7 +90,7 @@ def estructura(score):
         "n_sets": n,
         "gano_1er_set": int(difs[0] > 0),
         "vuelco": int(difs[0] < 0),                    # perdió el 1º y ganó
-        "set_decisivo": int(n in (3, 5) and n > 2),
+        "set_decisivo": int(decisivo),
         "sets_ajustados": sum(1 for d in difs if abs(d) <= 2),
         "sets_paliza": sum(1 for d in difs if abs(d) >= 4),
         "tiebreaks": len(tb_jug), "tiebreaks_ganados": tb_gan,

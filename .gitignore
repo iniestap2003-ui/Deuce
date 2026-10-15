@@ -5,3 +5,4 @@ datos/calculado.parquet
 datos/profundo.json
 datos/constantes.json
 __pycache__/
+.pytest_cache/
