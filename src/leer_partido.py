@@ -16,8 +16,13 @@ Convenciones de la página, comprobadas con la final del US Open 2026:
 import re
 import html as H
 
-VERSION = "2"   # si cambia, se vuelven a intentar las páginas que no se entendieron
 from functools import lru_cache
+
+VERSION = "3"   # si cambia, se vuelven a intentar las páginas que no se entendieron
+
+
+class PaginaIncompleta(ValueError):
+    """La página no trae algún dato imprescindible: no es un fallo del lector."""
 
 
 # ----------------------------------------------------------------------------
@@ -46,6 +51,15 @@ def _filas(tabla):
     return out
 
 
+def _tabla(h, nombre, obligatoria=True):
+    """Filas de una tabla de la página. Si falta una imprescindible se dice cuál, en vez de
+    dejar que el lector tropiece más adelante con un IndexError sin explicación."""
+    t = _filas(_var(h, nombre))
+    if obligatoria and not t:
+        raise PaginaIncompleta(f"la página no trae la tabla '{nombre}'")
+    return t
+
+
 def _n(celda):
     """'43  (68%)' -> 43 ; '71.3%' -> 0.713 ; '' -> None"""
     if celda is None or celda == "":
@@ -65,6 +79,8 @@ def _fila(tabla, etiqueta, seccion=0):
 
 def _col(tabla, cabecera_prefijo, seccion=0):
     """Índice de la columna cuya cabecera empieza por `cabecera_prefijo`."""
+    if not tabla:
+        return None
     cabs = [f for f in tabla if f and f[0].isupper() and len(f) > 3]
     cab = cabs[seccion] if len(cabs) > seccion else tabla[0]
     for i, c in enumerate(cab):
@@ -94,6 +110,9 @@ def _modelo(pA, pB, bo):
     def set_(ga, gb, sa):
         if ga >= 6 and ga - gb >= 2: return 1.0
         if gb >= 6 and gb - ga >= 2: return 0.0
+        if ga == gb >= 7:   # set final sin desempate (8-8, 9-9...): gana quien se lleve dos juegos seguidos
+            hA, rA = juego(0, 0, pA), 1 - juego(0, 0, pB)
+            return hA * rA / (hA * rA + (1 - hA) * (1 - rA))
         if ga == 7 or gb == 7: return 1.0 if ga > gb else 0.0
         if ga == 6 and gb == 6: return tb(0, 0)
         pg = juego(0, 0, pA) if sa else 1 - juego(0, 0, pB)
@@ -128,8 +147,34 @@ _GANA_ULTIMO = {"winner", "ace", "service winner"}
 _PIERDE_ULTIMO = {"forced error", "unforced error", "double fault"}
 
 
-def _puntos(h, p1, p2):
-    """Lista de puntos, todo orientado al JUGADOR 1 (el primero del título)."""
+_VALOR = {"0": 0, "15": 1, "30": 2, "40": 3, "AD": 4, "A": 4}
+
+
+def _marcador(x, desempate):
+    """'30-15' -> (2, 1) ; 'AD-40' -> (4, 3) ; en un desempate '15-14' -> (15, 14). None si no se entiende."""
+    try:
+        v = [int(c) if desempate else _VALOR[c] for c in x.strip().upper().split("-")]
+    except (KeyError, ValueError):
+        return None
+    return tuple(v) if len(v) == 2 else None
+
+
+def _gana_por_marcador(a, b):
+    """¿Ganó el jugador 1 el punto `a`? Se deduce del marcador del punto siguiente `b`."""
+    if b["s"] != a["s"]:
+        return b["s"][0] > a["s"][0]
+    if b["g"] != a["g"]:
+        return b["g"][0] > a["g"][0]
+    if a["p"] is None or b["p"] is None or a["p"] == b["p"]:
+        return None
+    # 40-40 -> AD-40 sube el 1 ; AD-40 -> 40-40 baja el 1 (ganó el 2) ; 40-AD -> 40-40 baja el 2
+    return b["p"][0] > a["p"][0] or b["p"][1] < a["p"][1]
+
+
+def _puntos(h, p1, p2, gana_partido1):
+    """Lista de puntos, todo orientado al JUGADOR 1 (el primero del título).
+    Quién gana cada punto se lee de cómo acaba la descripción; si la página usa otra fórmula
+    (anotaciones antiguas, puntos sin detalle) se deduce del marcador del punto siguiente."""
     out = []
     for f in _filas(_var(h, "pointlog"))[1:]:
         if len(f) < 5 or f[0] not in (p1, p2):
@@ -137,8 +182,10 @@ def _puntos(h, p1, p2):
         srv1 = f[0] == p1
         s = [int(x) for x in f[1].split("-")]
         g = [int(x) for x in f[2].split("-")]
+        pm = _marcador(f[3], g == [6, 6])
         if not srv1:                       # el registro cuenta desde quien saca
             s, g = s[::-1], g[::-1]
+            pm = pm[::-1] if pm else None
         desc = f[4]
         m = re.search(r",\s*([a-z ]+)\.(?:\s*\(\d+-shot rally\))?\s*$", desc)
         fin = m.group(1).strip() if m else ""
@@ -154,23 +201,35 @@ def _puntos(h, p1, p2):
         largo = golpes - 1 if fin in ("forced error", "unforced error") else golpes   # convención de la web
         primero_dentro = "2nd serve" not in desc.split(";")[0]
         dire = re.search(r"1st serve (wide|down the T|to body)", desc)
-        out.append({"srv1": srv1, "s": s, "g": g, "gana1": gana1, "fin": fin,
+        out.append({"srv1": srv1, "s": s, "g": g, "p": pm, "gana1": gana1, "fin": fin,
                     "golpes": golpes, "largo": largo, "d1": dire.group(1) if (dire and primero_dentro) else None})
-    return out
+    for i, q in enumerate(out):
+        if q["gana1"] is None:
+            q["gana1"] = _gana_por_marcador(q, out[i + 1]) if i + 1 < len(out) else gana_partido1
+    # algún punto suelto sin ganador (huecos en la anotación) se descarta; si son muchos, la página no vale
+    sin = sum(q["gana1"] is None for q in out)
+    if sin > max(2, len(out) // 50):
+        raise PaginaIncompleta(f"{sin} de {len(out)} puntos sin ganador: ni la descripción ni el marcador lo dicen")
+    return [q for q in out if q["gana1"] is not None]
 
 
 # ----------------------------------------------------------------------------
 # lector principal
 # ----------------------------------------------------------------------------
 def leer(h):
-    titulo = re.search(r"<title>(.*?)</title>", h).group(1)
-    tm = re.match(r"(\d{4}) (.*?) (\w+): (.*?) vs (.*?) Detailed Stats", titulo)
+    titulo = re.search(r"<title>(.*?)</title>", h)
+    tm = titulo and re.match(r"(\d{4}) (.*?) (\w+): (.*?) vs (.*?) Detailed Stats", titulo.group(1))
+    if not tm:
+        raise PaginaIncompleta("el título de la página no tiene la forma 'año torneo ronda: A vs B'")
     anio, torneo, ronda, p1, p2 = tm.groups()
     res = re.search(r"<b>([^<]*?) d\. ([^<]*?) ([0-9][^<]*)</b>", h)
+    if not res:
+        raise PaginaIncompleta("la página no dice el resultado ('A d. B ...'): partido sin terminar o abandonado")
     ganador, perdedor, marcador = res.group(1).strip(), res.group(2).strip(), res.group(3).strip()
     # abreviaturas tal como las escribe la página ("BS", "AZ"...), en el orden del título.
     # No se deducen del nombre: con nombres de tres palabras la web puede abreviar distinto.
-    cab = _filas(_var(h, "rallyoutcomes"))[0]
+    ro = _tabla(h, "rallyoutcomes", obligatoria=False)
+    cab = ro[0] if ro else []
     abr = [m.group(1) for c in cab for m in [re.match(r"(.+?): W", c)] if m]
     if len(abr) != 2:
         abr = ["".join(w[0] for w in p1.split()), "".join(w[0] for w in p2.split())]
@@ -179,23 +238,28 @@ def leer(h):
     bo = 5 if len(re.findall(r"\d+-\d+", re.sub(r"\(\d+\)", "", marcador))) > 3 or torneo in (
         "Australian Open", "Roland Garros", "Wimbledon", "US Open") else 3
 
-    ov = _filas(_var(h, "overview"))
-    kp = _filas(_var(h, "keypoints"))
-    sn = _filas(_var(h, "serveNeut"))
-    ro = _filas(_var(h, "rallyoutcomes"))
-    pts = _puntos(h, p1, p2)
+    if not _filas(_var(h, "overview")) and _filas(_var(h, "pointlog")):
+        raise PaginaIncompleta("la página solo trae el registro punto a punto, sin tablas de estadísticas")
+    ov = _tabla(h, "overview")
+    kp = _tabla(h, "keypoints", obligatoria=False)
+    sn = _tabla(h, "serveNeut", obligatoria=False)
+    pts = _puntos(h, p1, p2, p1 == ganador)
+    if not pts:
+        raise PaginaIncompleta("la página no trae el registro punto a punto")
 
     J, NV = {"w": {}, "l": {}}, {"w": {}, "l": {}}
     for k, p in ((1, p1), (2, p2)):
         L = lado[p]; d = J[L]; v = NV[L]; I = ini[p]
         # --- resumen: ganadores y errores
         fo = _fila(ov, p)
+        if not fo:
+            raise PaginaIncompleta(f"el resumen no tiene fila para {p}")
         cw, cu = _col(ov, "Winners"), _col(ov, "UFE")
         wm = re.match(r"(\d+)\s*\((\d+)/(\d+)\)", fo[cw]); um = re.match(r"(\d+)\s*\((\d+)/(\d+)\)", fo[cu])
         d.update(win=int(wm.group(1)), wfh=int(wm.group(2)), wbh=int(wm.group(3)),
                  ue=int(um.group(1)), ufh=int(um.group(2)), ubh=int(um.group(3)))
         # --- saque
-        sv = _filas(_var(h, f"serve{k}"))
+        sv = _tabla(h, f"serve{k}")
         c_won, c_1in = _col(sv, "Won"), _col(sv, "1stIn")
         sv_pts = int(_n(_fila(sv, "Deuce Court")[1]) + _n(_fila(sv, "Ad Court")[1]))
         sv_won = int(_n(_fila(sv, "Deuce Court")[c_won]) + _n(_fila(sv, "Ad Court")[c_won]))
@@ -205,8 +269,10 @@ def leer(h):
         if tot:
             d["sd"] = [round(x / tot, 3) for x in z]; d["sdn"] = int(tot)
         # --- resto
-        rt = _filas(_var(h, f"return{k}"))
+        rt = _tabla(h, f"return{k}")
         t = _fila(rt, "Total")
+        if not t:
+            raise PaginaIncompleta(f"la tabla de resto de {p} no tiene fila 'Total'")
         re_pts = int(_n(t[1]))
         d["pts"] = sv_pts + re_pts
         c_rtb, c_inp = _col(rt, "Returnable"), _col(rt, "inPlay")
@@ -216,7 +282,7 @@ def leer(h):
             a, b = int(_n(corto[1])), int(_n(prof[1]))
             if a + b: v["prof"] = [b, a + b]
         # --- red y saque-red
-        nt = _filas(_var(h, f"netpts{k}"))
+        nt = _tabla(h, f"netpts{k}", obligatoria=False)
         f = _fila(nt, "All Net Points")
         if f:
             cw2, cps = _col(nt, "Wnr at Net"), _col(nt, "Passed at Net")
@@ -226,8 +292,8 @@ def leer(h):
         s = _fila(nt, "Serve-and-Volley")
         v["snv"] = [int(_n(s[1])) if s else 0, sv_pts]
         # --- dirección de golpes
-        sdir = _filas(_var(h, f"shotdir{k}"))
-        f = _fila(sdir, "Total")
+        sdir = _tabla(h, f"shotdir{k}", obligatoria=False)
+        f = _fila(sdir, "Total") or []
         cols = [_n(x) or 0 for x in f[1:6]]
         if sum(cols):
             v["cruz"] = [int(cols[0]), int(sum(cols))]; v["par"] = [int(cols[2]), int(sum(cols))]
@@ -235,18 +301,19 @@ def leer(h):
         f = _fila(sn, f"{I} 1st Serve")
         if f:
             c1, c5 = _col(sn, "1+"), _col(sn, "5+")
-            if f[c1] and f[c5]: v["evap"] = [_n(f[c1]), _n(f[c5])]
+            if c1 is not None and c5 is not None and len(f) > max(c1, c5) and f[c1] and f[c5]: v["evap"] = [_n(f[c1]), _n(f[c5])]
         # --- temple: bolas de break frente al saque corriente
         f = _fila(kp, f"{I} BP Faced")
         if f and _n(f[1]):
             v["temple"] = [int(_n(f[2])), int(_n(f[1])), sv_won, sv_pts]
         # --- peloteo por longitud
-        cW = next(i for i, c in enumerate(ro[0]) if c.startswith(f"{I}: W"))
-        rl = {}
-        for et, q in (("All: 1-3 Shots", "1-3"), ("All: 4-6 Shots", "4-6"), ("All: 7-9 Shots", "7-9"), ("All: 10+ Shots", "10")):
-            f = _fila(ro, et)
-            rl[q] = [int(_n(f[cW]) or 0), int(_n(f[1]) or 0)] if f else [0, 0]
-        d["rally"] = rl
+        cW = next((i for i, c in enumerate(cab) if c.startswith(f"{I}: W")), None)
+        if cW is not None:            # páginas sin tabla de peloteo: se omite el dato
+            rl = {}
+            for et, q in (("All: 1-3 Shots", "1-3"), ("All: 4-6 Shots", "4-6"), ("All: 7-9 Shots", "7-9"), ("All: 10+ Shots", "10")):
+                f = _fila(ro, et)
+                rl[q] = [int(_n(f[cW]) or 0), int(_n(f[1]) or 0)] if f and len(f) > cW else [0, 0]
+            d["rally"] = rl
 
     # --- secuencia de juegos, orientada al jugador 1
     # un desempate es un único "juego" 6-6 aunque el saque cambie dentro de él
