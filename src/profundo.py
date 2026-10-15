@@ -286,6 +286,19 @@ def cuadra(deep, marcador):
     return reconstruir(deep) == [list(x) for x in sets_del_marcador(marcador)]
 
 
+def motivo(meta, deep, marcador, bo):
+    """Por qué una página no pasa el control de calidad, dicho para el informe.
+    meta["marcador"] es el resultado que escribe el propio anotador en la página."""
+    from limpieza import sets_del_marcador
+    pagina = [list(x) for x in sets_del_marcador(meta.get("marcador", ""))]
+    if sum(a > b for a, b in pagina) < bo // 2 + 1:
+        return f"anotación sin terminar: el anotador solo llegó a {meta.get('marcador') or 'nada'} (oficial {marcador})"
+    if pagina != [list(x) for x in sets_del_marcador(marcador)]:
+        return f"el anotador apunta {meta['marcador']}, pero el resultado oficial es {marcador}"
+    rec = " ".join(f"{a}-{b}" for a, b in reconstruir(deep))
+    return f"faltan puntos en el registro: se para en {rec} (oficial {marcador})"
+
+
 def construir(recalcular_repo=None):
     """recalcular_repo: None = solo si hay ficheros del repositorio; True/False para forzar."""
     arch = pd.read_parquet(D / "calculado.parquet", columns=["fecha", "tourney_name", "round", "winner_name", "loser_name", "score", "best_of"])
@@ -349,7 +362,10 @@ def construir(recalcular_repo=None):
             except Exception:
                 continue
             paginas[fh.name] = (meta, deep, nv)
-            ofertas += [(s, fh.name, i) for s, i in A.candidatos(meta["ganador"], meta["perdedor"], fecha, meta["ronda"], meta["torneo"])]
+            # con otro torneo en el archivo (anotación mal rotulada, o una exhibición que el archivo
+            # no tiene) solo vale si el punto a punto reproduce ese resultado: si no, es otro partido
+            ofertas += [(s, fh.name, i) for s, i in A.candidatos(meta["ganador"], meta["perdedor"], fecha, meta["ronda"], meta["torneo"])
+                        if tor_parecido(ntor(meta["torneo"]), ntor(arch.at[i, "tourney_name"])) or cuadra(deep, arch.at[i, "score"])]
         asig = asignar(ofertas)
         no_cuadra = []
         for nombre, i in asig.items():
@@ -359,7 +375,7 @@ def construir(recalcular_repo=None):
                 out[clave(r.fecha, r.winner_name, r.loser_name, r["round"])] = {"deep": deep, "nv": nv}
                 pag += 1
             else:
-                no_cuadra.append(f"{nombre}: su punto a punto no reproduce el resultado oficial {r.score}")
+                no_cuadra.append(f"{nombre}: {motivo(meta, deep, r.score, 5 if r.best_of == 5 else 3)}")
         sin_pareja = [n for n in paginas if n not in asig]
         (carpeta / "_emparejamiento.txt").write_text(
             f"páginas convertidas: {len(paginas)} · emparejadas con el archivo: {len(asig)} · "
