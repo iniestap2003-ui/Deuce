@@ -24,7 +24,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
-from leer_partido import leer, VERSION
+from leer_partido import leer, VERSION, PaginaIncompleta
 
 RAIZ = Path(__file__).resolve().parent.parent
 D = RAIZ / "datos"
@@ -211,11 +211,13 @@ def _mcp_paginas(carpeta, maximo, pausa, inf):
     repo = D / "profundo_repo.json"
     excluir = {v["deep"]["mid"] for v in json.load(open(repo)).values()} if repo.exists() else set()
     excluir |= {f.stem for f in carpeta.glob("*.json")}                      # ya convertidas
-    excluir |= {n[:-5] for n, f in registro.items() if (hoy - f).days < 14}  # apartadas
+    apartadas = {n[:-5] for n, f in registro.items() if (hoy - f).days < 14}
+    excluir |= apartadas
     nuevos = pendientes(nombres, excluir)
     rg = [n for n in nuevos if "Roland_Garros" in n and n.startswith(str(temporada_actual()))]
     inf.append(f"de nuestro archivo y aún sin tener: {len(nuevos):,} (de Roland Garros {temporada_actual()}: {len(rg)})")
-    hechos, sin_red, no_leidas, ejemplos = 0, 0, 0, []
+    hechos, sin_red, ejemplos = 0, 0, []
+    causas = {}     # motivo -> páginas que no se entendieron por él
     for n in nuevos[:maximo]:
         url = BASE_WEB + n
         if not robots.can_fetch(AGENTE, url):
@@ -234,11 +236,29 @@ def _mcp_paginas(carpeta, maximo, pausa, inf):
             hechos += 1
             registro.pop(n, None)
         except Exception as e:
-            no_leidas += 1
             registro[n] = hoy
-            if len(ejemplos) < 5: ejemplos.append(f"no se pudo interpretar {n}: {type(e).__name__}: {e}")
+            # una página incompleta se explica sola; un error del lector se agrupa por tipo y línea
+            if isinstance(e, PaginaIncompleta):
+                motivo = f"página incompleta: {re.sub(r'[0-9]+ de [0-9]+', 'N de M', str(e))}"
+            else:
+                linea = e.__traceback__
+                while linea.tb_next: linea = linea.tb_next
+                motivo = f"ERROR DEL LECTOR ({type(e).__name__} en {Path(linea.tb_frame.f_code.co_filename).name}:{linea.tb_lineno}): {e}"
+            causas.setdefault(motivo, []).append(n)
     fallos.write_text(f"version {VERSION}\n" + "\n".join(f"{n} {f.isoformat()}" for n, f in sorted(registro.items())))
     resto = max(0, len(nuevos) - maximo)
+    no_leidas = sum(len(v) for v in causas.values())
     inf.append(f"descargadas y convertidas: {hechos} · fallos de conexión: {sin_red} · no interpretadas: {no_leidas}")
     inf += ["  " + e for e in ejemplos]
-    inf.append(f"quedan {resto} para la próxima ejecución" if resto else "AL DÍA: no falta ningún partido anotado de nuestro archivo")
+    for motivo, ns in sorted(causas.items(), key=lambda kv: -len(kv[1])):
+        inf.append(f"  {len(ns):>4} × {motivo}")
+        inf.append(f"         p. ej. {ns[0]}")
+    if apartadas:
+        inf.append(f"apartadas de ejecuciones anteriores por no entenderse: {len(apartadas)} "
+                   f"(se reintentan a los 14 días o al cambiar la versión del lector; lista en _fallos.txt)")
+    pendiente = []
+    if resto: pendiente.append(f"quedan {resto} para la próxima ejecución")
+    if no_leidas or apartadas: pendiente.append(f"{no_leidas + len(apartadas)} páginas sin interpretar")
+    if sin_red: pendiente.append(f"{sin_red} sin descargar por la conexión")
+    inf.append("PENDIENTE: " + " · ".join(pendiente) if pendiente
+               else "AL DÍA: no falta ningún partido anotado de nuestro archivo")
