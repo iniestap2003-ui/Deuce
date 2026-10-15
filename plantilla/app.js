@@ -19,7 +19,7 @@ async function cargarTemporada(a){
  return c}
 async function traerIndice(){return IDX||(IDX=await traer("datos/indice.json"))}
 
-const COL={"PULSO":"#FF5C39","DUELO DE SAQUES":"#4D95FF","MARCADOR ENGANOSO":"#B478FF","SIN HISTORIA":"#7A8699"};
+const COL={"PULSO":"#C2605C","DUELO DE SAQUES":"#5B8FC4","MARCADOR ENGANOSO":"#2E9A84","SIN HISTORIA":"#7C8079"};
 const NOM={"PULSO":"Pulso largo","DUELO DE SAQUES":"Duelo de saques","MARCADOR ENGANOSO":"Marcador engañoso","SIN HISTORIA":"Sin historia"};
 const SUPN={Clay:"Tierra",Hard:"Pista dura",Grass:"Hierba",Carpet:"Moqueta"};
 const RON={F:"Final",SF:"Semifinal",QF:"Cuartos",R16:"Octavos",R32:"3ª ronda",R64:"2ª ronda",R128:"1ª ronda",RR:"Grupos",BR:"Bronce"};
@@ -30,14 +30,14 @@ const pc=v=>v==null?"—":Math.round(v*100)+"%";
 const cssv=n=>getComputedStyle(document.body).getPropertyValue(n).trim();
 let P=[],V=[],tipos=new Set(),soloRobo=false,soloDeep=false,tope=50;
 const MET=[
-{k:"disputa",n:"Disputa",p:1,c:"#1FD68A",q:"Cuánto se peleó cada juego por dentro.",
+{k:"disputa",n:"Disputa",p:1,c:"#2E9A84",q:"Cuánto se peleó cada juego por dentro.",
  ico:'<circle cx="20" cy="20" r="15" stroke="currentColor" stroke-width="2.2"/><path d="M20 5v30M5 20h30" stroke="currentColor" stroke-width="1.1" opacity=".45"/>',
  t:"El marcador solo guarda quién ganó cada juego, no lo que costó ganarlo. Un 6-0 puede ser seis juegos regalados o seis juegos que se fueron a deuce una y otra vez. Sobre el papel son idénticos. En la pista no tienen nada que ver.",
  como:"Un juego ganado sin conceder un punto se resuelve en cuatro puntos. Si llega a deuce ya hacen falta seis, y cada empate añade dos más. Así que basta con dividir todos los puntos del partido entre todos los juegos para saber cuánto costó el juego medio. Si sale cerca de cuatro, fue un paseo. Si sale por encima de siete, cada juego fue una batalla. Ese número se estira después a una escala de cero a cien para que se lea de un vistazo.",
  e:"Murray ganó 6-0 6-0 a Kendrick y aun así tuvo que jugar 107 puntos y salvar tres bolas de break. El resultado dice paseo. La disputa dice lo contrario.",
  esc:[0,100,46.7],escT:"0 = juegos resueltos sin esfuerzo · 100 = cada juego al límite"},
 
-{k:"tension",n:"Tensión",p:1,c:"#FF5C39",q:"Lo cerca que estuvo de caer del otro lado.",
+{k:"tension",n:"Tensión",p:1,c:"#C2605C",q:"Lo cerca que estuvo de caer del otro lado.",
  ico:'<path d="M4 31L12 14l8 10 8-16 8 11" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>',
  t:"No es lo mismo ganar 7-5 que ganar 6-1, aunque los dos sean un set. La tensión mide cuánto le faltó al perdedor para llevarse cada parcela del partido, y con eso resume si el resultado estuvo en el aire o nunca lo estuvo.",
  como:"Se mira set por set la distancia entre los dos marcadores. Cuanto más pegados, más aporta ese set. Un 7-6 vale casi el máximo, un 6-4 bastante, un 6-0 no aporta nada. Después se promedian todos los sets del partido. Y si el encuentro llegó hasta el último set posible se le añade una prima, porque eso significa que todo se decidió a cara o cruz.",
@@ -45,71 +45,71 @@ const MET=[
  av:"Mide igualdad, no calidad. Dos jugadores fallando a la vez también producen marcadores pegados.",
  esc:[0,100,58.3],escT:"0 = nunca hubo partido · 100 = todo al límite"},
 
-{k:"robo",n:"Robo",p:1,c:"#B478FF",q:"Ganar habiendo hecho menos puntos que el rival.",
+{k:"robo",n:"Robo",p:1,c:"#A57FC4",q:"Ganar habiendo hecho menos puntos que el rival.",
  ico:'<path d="M7 20h26M25 11l8 9-8 9" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
  t:"Parece un error de cálculo y ocurre en uno de cada veinte partidos. El tenis no reparte el premio a quien más puntos suma, sino a quien los suma en el momento correcto. Perder un set 6-0 cuesta exactamente lo mismo que perderlo 7-6, así que se pueden regalar puntos a manos llenas sin pagar ningún precio por ello.",
  como:"Se suman todos los puntos que ganó cada jugador a lo largo del encuentro, los que hizo sacando y los que le arrancó al saque del contrario. Si el que levantó los brazos al final resulta que sumó menos de la mitad, ahí hay un robo.",
  e:"Final de Wimbledon 2019. Djokovic se lleva el trofeo con 204 puntos. Federer acabó con 218.",
  av:"No es ningún demérito para el ganador. Casi siempre significa que fue quien no tembló cuando tocaba."},
 
-{k:"dominacion",n:"Control",p:1,c:"#3D7BFF",q:"Quién mandaba de verdad ahí dentro.",
+{k:"dominacion",n:"Control",p:1,c:"#5B8FC4",q:"Quién mandaba de verdad ahí dentro.",
  ico:'<rect x="6" y="23" width="7" height="12" fill="currentColor" opacity=".4"/><rect x="16" y="14" width="7" height="21" fill="currentColor" opacity=".7"/><rect x="26" y="5" width="7" height="30" fill="currentColor"/>',
  t:"Un solo número para resumir quién llevó la iniciativa. Contar aces engaña, porque un jugador puede sacar de maravilla y estar perdiendo. Esto compara lo que le arrancas al rival con lo que él te arranca a ti, que es lo que realmente decide un partido de tenis.",
  como:"Por un lado se mira qué proporción de puntos consigues cuando saca el otro, que es lo difícil. Por otro, qué proporción le concedes tú cuando sacas, que es lo que no deberías estar cediendo. Si lo primero es mayor que lo segundo, llevabas tú la iniciativa. Si es menor, era suya. El uno es la frontera exacta entre las dos cosas.",
  e:"En aquella final de Wimbledon el número dijo lo que las estadísticas oficiales callaron: Federer dominó, Djokovic ganó.",
  esc:[0,3,1.32],escT:"por debajo de 1 la llevaba el rival · por encima, mandabas tú"},
 
-{k:"espectaculo",n:"Espectáculo",p:1,c:"#FFB74D",q:"Si merecía la pena quedarse despierto.",
+{k:"espectaculo",n:"Espectáculo",p:1,c:"#C4A25F",q:"Si merecía la pena quedarse despierto.",
  ico:'<path d="M20 4l4.6 10.2L36 15.8l-8 7.7 1.9 11.1L20 29.3 10.1 34.6 12 23.5l-8-7.7 11.4-1.6z" fill="currentColor"/>',
  t:"Un partido memorable necesita dos cosas a la vez: que estuviera reñido y que hubiera algo en juego. Una primera ronda igualadísima en un torneo menor es entretenida, pero no se recuerda. Una final de Grand Slam que se va al quinto set no se olvida nunca.",
  como:"Primero se pesa cuánto había en juego, combinando la categoría del torneo con lo avanzada que estaba la ronda. Un Grand Slam pesa el doble que un torneo normal, y una final pesa el triple que una primera ronda. Después ese peso se multiplica por lo reñido que estuvo el encuentro. Solo cuando las dos cosas son altas sale un número alto.",
  e:"La final de Roland Garros 2025 entre Alcaraz y Sinner encabeza la lista histórica.",
  esc:[0,12,3.4],escT:"0 = trámite · 12 = final de Grand Slam al límite"},
 
-{k:"volatilidad",n:"Volatilidad",p:1,c:"#B478FF",q:"Si alguien se descompuso y volvió.",
+{k:"volatilidad",n:"Volatilidad",p:1,c:"#A57FC4",q:"Si alguien se descompuso y volvió.",
  ico:'<path d="M4 20c6-15 10 15 16 0s10-15 16 0" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/>',
  t:"Dos partidos pueden acabar con la misma diferencia y no parecerse en nada. Un 6-4 6-4 es un pulso firme de principio a fin. Un 6-1 1-6 6-1 es un ataque de nervios con final feliz. El resultado no distingue entre los dos; esto sí.",
  como:"Se observa cómo de desigual fue cada set y se comprueba si todos se parecieron entre sí o no. Cuando los sets tienen marcadores similares, el partido fue estable. Cuando hay un set muy desequilibrado hacia un lado y otro muy desequilibrado hacia el otro, el encuentro fue una montaña rusa y el número sube.",
  esc:[0,6,1.25],escT:"0 = pulso firme · 6 = montaña rusa"},
 
-{k:"sorpresa",n:"Sorpresa",p:1,c:"#FF5C39",q:"Cuánto se rompió el guion.",
+{k:"sorpresa",n:"Sorpresa",p:1,c:"#C2605C",q:"Cuánto se rompió el guion.",
  ico:'<path d="M20 4l3 12h13l-10.5 7.6L29.5 36 20 28.4 10.5 36l4-12.4L4 16h13z" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linejoin="round"/>',
  t:"Decir que ganó el peor clasificado no significa nada por sí solo. Que el número sesenta gane al cincuenta pasa todas las semanas y no lo recuerda nadie. Que el ciento setenta y cinco tumbe al número uno del mundo se cuenta durante años.",
  como:"Se compara la distancia entre los puestos de los dos jugadores, pero no restando sino dividiendo. Eso hace que subir diez puestos desde el fondo de la clasificación pese mucho menos que ganarle a alguien que está diez veces por delante de ti. Así el número refleja lo improbable que era el resultado, no la distancia aritmética.",
  e:"Kokkinakis, ciento setenta y cinco del mundo, ganó a Federer en Miami 2018. Nadie ha roto tanto el guion desde entonces.",
  esc:[0,5,0],escT:"0 = ganó el favorito · 5 = esto no debería haber pasado"},
 
-{k:"desperdicio",n:"Desperdicio",p:1,c:"#FFB74D",q:"Las oportunidades que tiró a la basura.",
+{k:"desperdicio",n:"Desperdicio",p:1,c:"#C4A25F",q:"Las oportunidades que tiró a la basura.",
  ico:'<circle cx="20" cy="20" r="14" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M13.5 13.5l13 13M26.5 13.5l-13 13" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
  t:"Una bola de break es la puerta abierta: el punto que te permite quitarle el saque al rival y romper el partido. Cerrarla una vez tras otra es la forma más cruel de perder, y a veces de ganar sudando el triple de lo necesario.",
  como:"Se cuentan todas las veces que un jugador se puso a un punto de romper el servicio del contrario, y se resta cuántas de esas veces lo consiguió de verdad. Lo que queda son las ocasiones que tuvo delante y dejó escapar.",
  e:"Fucsovics falló veintisiete contra Dimitrov. Veintisiete. Y aun así ganó el partido."},
 
-{k:"asimetria",n:"Asimetría",p:1,c:"#1FD68A",q:"Si ganó con el brazo o con las piernas.",
+{k:"asimetria",n:"Asimetría",p:1,c:"#2E9A84",q:"Si ganó con el brazo o con las piernas.",
  ico:'<path d="M20 5v30M20 5l-9 9M20 5l9 9M20 35l-9-9M20 35l9-9" stroke="currentColor" stroke-width="2.1" fill="none" stroke-linecap="round"/>',
  t:"Hay dos maneras de ganar un partido de tenis. Una es imponerse desde el saque, golpeando primero y sin dar opción. La otra es devolver todo lo que llega hasta que el de enfrente se rompe. Casi nadie hace las dos cosas igual de bien, y eso retrata a un jugador mejor que cualquier etiqueta.",
  como:"Se mide cuánto destacó sacando por encima de lo que hace un jugador corriente del circuito, y cuánto destacó restando por encima de ese mismo listón. Después se comparan las dos cosas entre sí. Ojo a un detalle importante: no compara los puntos que gana sacando con los que gana restando, porque sacar da ventaja siempre y entonces todo el mundo saldría positivo. Compara lo mucho o poco que destaca en cada faceta. El cero significa que destacó igual en las dos. Positivo, que su saque sobresale más de lo que sobresale su resto.",
  e:"En un extremo están Karlović, Isner y Raonic, que viven del saque. En el otro, Schwartzman, que vive de devolverlo todo."},
 
-{k:"escape",n:"Bolas de break salvadas de más",p:1,c:"#FF5C39",q:"Cuántas salvó por encima de lo esperable.",
+{k:"escape",n:"Bolas de break salvadas de más",p:1,c:"#C2605C",q:"Cuántas salvó por encima de lo esperable.",
  ico:'<path d="M20 5l13 6v11c0 8-5.5 13-13 15-7.5-2-13-7-13-15V11z" stroke="currentColor" stroke-width="2.1" fill="none"/>',
  t:"Salvar dos bolas de break de dos suena impecable, pero puede ser casualidad. Salvar nueve de quince, con esa presión encima durante todo el partido, es otra cosa muy distinta. El porcentaje a secas no distingue entre ambas situaciones.",
  como:"En el circuito se salvan alrededor de seis de cada diez bolas de break. Sabiendo cuántas afrontó un jugador se puede calcular cuántas debería haber salvado rindiendo como cualquier otro, y compararlo con las que salvó de verdad. El resultado es un número de bolas: un dos significa que salvó dos más de las que le tocaban; un menos uno, que se dejó una por el camino.",
  e:"Es la diferencia entre un portero que para tres tiros fáciles y otro que para dos imposibles."},
 
-{k:"ptssaque",n:"Puntos ganados al saque",p:0,c:"#3D7BFF",q:"Qué pasa cuando le toca servir.",
+{k:"ptssaque",n:"Puntos ganados al saque",p:0,c:"#5B8FC4",q:"Qué pasa cuando le toca servir.",
  ico:'<path d="M20 35V9M20 9l-7 7M20 9l7 7" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="20" cy="35" r="3" fill="currentColor"/>',
  t:"Seguramente la cifra que mejor anticipa quién va a ganar un partido. En el tenis masculino quien saca parte con ventaja en cada punto, así que sostener el propio servicio es la obligación básica. El que deja de cumplirla, pierde.",
  como:"De todos los puntos en los que un jugador puso la pelota en juego con su saque, se mira cuántos acabó llevándose, sumando los que ganó con el primer servicio y los que ganó con el segundo.",
  esc:[.5,.9,.69],escT:"por debajo del 61% flojea · por encima del 78% es intocable"},
 
-{k:"primeros",n:"Primeros saques dentro",p:0,c:"#3D7BFF",q:"Cuántos primeros servicios entran.",
+{k:"primeros",n:"Primeros saques dentro",p:0,c:"#5B8FC4",q:"Cuántos primeros servicios entran.",
  ico:'<rect x="6" y="6" width="28" height="28" rx="4" stroke="currentColor" stroke-width="2.1" fill="none"/><path d="M13 20l5 5 9-10" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round"/>',
  t:"Un clásico que engaña a mucha gente. Meter muchísimos primeros saques no sirve de nada si se sacan a media potencia para no fallar. Solo significa algo leído junto al porcentaje de puntos que se ganan con ellos.",
  como:"De todas las veces que un jugador sacó, cuántas veces su primer intento cayó dentro del cuadro sin necesidad de recurrir al segundo servicio.",
  esc:[.4,.85,.626],escT:"la media del circuito ronda el 63%"},
 
-{k:"eficiencia",n:"Eficiencia",p:1,c:"#1FD68A",q:"Si aprovechó sus puntos o los malgastó.",
+{k:"eficiencia",n:"Eficiencia",p:1,c:"#2E9A84",q:"Si aprovechó sus puntos o los malgastó.",
  ico:'<path d="M6 30l8-8 6 6 14-16" stroke="currentColor" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="34" cy="12" r="3" fill="currentColor"/>',
  t:"En tenis no ganan los puntos, ganan los juegos. Y los puntos no valen todos lo mismo: el que decide un juego vale muchísimo más que el cuarto punto de un juego que ya llevas ganado. Hay jugadores que acumulan puntos donde no sirven de nada y los echan en falta donde importan.",
  como:"Se compara qué porcentaje de los juegos se llevó un jugador con qué porcentaje de los puntos ganó. Si se quedó con el sesenta por ciento de los juegos habiendo ganado solo el cincuenta y dos por ciento de los puntos, significa que los colocó donde hacían falta y la cifra sale positiva. Si ocurre al revés, es que ganó muchos puntos en juegos que ya tenía resueltos o que ya estaban perdidos, y sale negativa.",
@@ -178,10 +178,10 @@ function pista(){
     // pelota, rotando sobre sí misma
     x.save();x.translate(px,py);x.rotate(ang);
     const g=x.createRadialGradient(-rr*.34,-rr*.38,rr*.12,0,0,rr);
-    g.addColorStop(0,"#F4FF8C");g.addColorStop(.5,"#D6F52B");g.addColorStop(1,"#93B310");
+    g.addColorStop(0,"#F1E2B6");g.addColorStop(.5,"#C9A660");g.addColorStop(1,"#7E6634");
     x.globalAlpha=.95;x.fillStyle=g;x.beginPath();x.arc(0,0,rr,0,7);x.fill();
     // las dos costuras curvas, que es lo que delata el giro
-    x.globalAlpha=.82;x.strokeStyle="#FCFFE8";x.lineWidth=rr*.15;x.lineCap="round";
+    x.globalAlpha=.82;x.strokeStyle="#FBF5E6";x.lineWidth=rr*.15;x.lineCap="round";
     x.beginPath();x.arc(-rr*1.02,0,rr*1.28,-0.72,0.72);x.stroke();
     x.beginPath();x.arc(rr*1.02,0,rr*1.28,Math.PI-0.72,Math.PI+0.72);x.stroke();
     x.restore();x.globalAlpha=1;
@@ -237,18 +237,18 @@ function mapaEstilos(){const miV=++MAPV;
   // ejes en cero = jugador corriente
   x.strokeStyle=ln;x.lineWidth=1;x.setLineDash([5,6]);
   x.beginPath();x.moveTo(cx0,M.t);x.lineTo(cx0,H-M.b);x.moveTo(M.l,cy0);x.lineTo(W-M.r,cy0);x.stroke();x.setLineDash([]);
-  x.font="600 10.5px Sora";x.fillStyle=mu;x.globalAlpha=.85;
+  x.font="600 10.5px Jost";x.fillStyle=mu;x.globalAlpha=.85;
   x.textAlign="center";x.fillText("media del circuito",cx0,M.t-12);
   x.textAlign="right";x.fillText("media",M.l-8,cy0+3);
   // etiquetas de cuadrante
-  x.font="700 11px Sora";x.globalAlpha=.55;
+  x.font="700 11px Jost";x.globalAlpha=.55;
   x.textAlign="right";x.fillText("RESTADOR",W-M.r-4,M.t+2);
   x.textAlign="left";x.fillText("COMPLETO",M.l+4,M.t+2);
   x.textAlign="left";x.fillText("EN APUROS",M.l+4,H-M.b+16);
   x.textAlign="right";x.fillText("SACADOR",W-M.r-4,H-M.b+16);
   x.globalAlpha=1;
   // titulos de eje
-  x.font="500 11.5px Sora";x.fillStyle=mu;x.textAlign="center";
+  x.font="500 11.5px Jost";x.fillStyle=mu;x.textAlign="center";
   x.fillText("gana más con su saque  →",W/2,H-14);
   x.save();x.translate(18,H/2);x.rotate(-Math.PI/2);x.fillText("gana más restando  →",0,0);x.restore();
   // puntos
@@ -259,9 +259,9 @@ function mapaEstilos(){const miV=++MAPV;
    x.beginPath();x.arc(n.px,n.py,es?n.r+2.5:n.r,0,7);x.fill();
    if(es){x.globalAlpha=.3;x.strokeStyle=acc;x.lineWidth=1.5;
     x.beginPath();x.arc(n.px,n.py,n.r+10,0,7);x.stroke()}
-   if(grande&&!es){x.globalAlpha=.78;x.fillStyle=ink;x.font="600 11px Sora";
+   if(grande&&!es){x.globalAlpha=.78;x.fillStyle=ink;x.font="600 11px Jost";
     x.textAlign="center";x.textBaseline="bottom";x.fillText(n.n,n.px,n.py-n.r-5)}
-   if(es){x.globalAlpha=1;x.fillStyle=ink;x.font="700 13px Sora";
+   if(es){x.globalAlpha=1;x.fillStyle=ink;x.font="700 13px Jost";
     x.textAlign="center";x.textBaseline="bottom";x.fillText(n.n,n.px,n.py-n.r-8)}
   });
   x.globalAlpha=1;requestAnimationFrame(frame)}
@@ -281,13 +281,13 @@ function barrasPct(id,labels,cols,pct,h){
    const w=(W-84)*pct[i][j]/100;
    x.fillStyle=COL[c];x.globalAlpha=.88;
    x.beginPath();x.roundRect(px,y,Math.max(0,w-1.5),bh-16,3);x.fill();
-   if(w>36){x.globalAlpha=1;x.fillStyle="#08090C";x.font="700 10px Sora,sans-serif";x.textAlign="center";
+   if(w>36){x.globalAlpha=1;x.fillStyle="#08090C";x.font="700 10px Jost,sans-serif";x.textAlign="center";
     x.textBaseline="middle";x.fillText(pct[i][j]+"%",px+w/2,y+(bh-16)/2)}
    px+=w});
-  x.globalAlpha=1;x.fillStyle=cssv("--ink");x.font="600 12px Sora,sans-serif";
+  x.globalAlpha=1;x.fillStyle=cssv("--ink");x.font="600 12px Jost,sans-serif";
   x.textAlign="right";x.textBaseline="middle";x.fillText(L,66,y+(bh-16)/2)});
  // leyenda
- x.font="400 10px Sora,sans-serif";x.textBaseline="middle";x.textAlign="left";
+ x.font="400 10px Jost,sans-serif";x.textBaseline="middle";x.textAlign="left";
  let lx=74;cols.forEach(c=>{x.fillStyle=COL[c];x.beginPath();x.arc(lx+4,H-12,4,0,7);x.fill();
   x.fillStyle=cssv("--muted");x.fillText(NOM[c],lx+12,H-12);lx+=x.measureText(NOM[c]).width+36});
 }
@@ -340,27 +340,27 @@ function barras(id,labels,series,h){const o=cx(id,h);if(!o)return;const{x,W,H}=o
   series.forEach(s=>{const hh=(H-42)*s.v[i]/max;x.fillStyle=s.c;
    const bx=4+i*bw+bw*.17,bwd=bw*.66;
    x.beginPath();x.roundRect(bx,y-hh,bwd,hh,[4,4,0,0]);x.fill();y-=hh});
-  x.fillStyle=cssv("--muted");x.font="10px 'Space Mono',monospace";x.textAlign="center";x.fillText(L,4+i*bw+bw*.5,H-8)})}
+  x.fillStyle=cssv("--muted");x.font="10px Jost,sans-serif";x.textAlign="center";x.fillText(L,4+i*bw+bw*.5,H-8)})}
 function hist(id,v,e,col,h){const o=cx(id,h);if(!o)return;const{x,W,H}=o;
  const bw=W/v.length,max=Math.max(...v)||1;
  v.forEach((n,i)=>{const hh=(H-30)*n/max;const g=x.createLinearGradient(0,H-hh,0,H);
   g.addColorStop(0,col);g.addColorStop(1,col+"18");x.fillStyle=g;
   x.beginPath();x.roundRect(i*bw+1.5,H-24-hh,bw-3,hh,[3,3,0,0]);x.fill()});
- x.fillStyle=cssv("--muted");x.font="10px 'Space Mono',monospace";x.textAlign="left";x.fillText(Math.round(e[0]),2,H-7);
+ x.fillStyle=cssv("--muted");x.font="10px Jost,sans-serif";x.textAlign="left";x.fillText(Math.round(e[0]),2,H-7);
  x.textAlign="right";x.fillText(Math.round(e[e.length-1]),W-2,H-7)}
 function linea(id,xs,ys,col,h){const o=cx(id,h);if(!o)return;const{x,W,H}=o,pad=36;
  const mn=Math.min(...ys)*.96,mx=Math.max(...ys)*1.05;
  const px=i=>pad+(W-pad-10)*i/(xs.length-1),py=v=>H-28-(H-50)*(v-mn)/(mx-mn);
  x.strokeStyle=cssv("--line");x.lineWidth=1;
  [0,.5,1].forEach(f=>{const y=py(mn+(mx-mn)*f);x.beginPath();x.moveTo(pad,y);x.lineTo(W-10,y);x.stroke();
-  x.fillStyle=cssv("--muted");x.font="10px 'Space Mono',monospace";x.textAlign="right";x.fillText((mn+(mx-mn)*f).toFixed(1),pad-6,y+3)});
+  x.fillStyle=cssv("--muted");x.font="10px Jost,sans-serif";x.textAlign="right";x.fillText((mn+(mx-mn)*f).toFixed(1),pad-6,y+3)});
  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,col+"44");g.addColorStop(1,col+"00");
  x.beginPath();ys.forEach((v,i)=>i?x.lineTo(px(i),py(v)):x.moveTo(px(i),py(v)));
  x.lineTo(px(ys.length-1),H-28);x.lineTo(px(0),H-28);x.closePath();x.fillStyle=g;x.fill();
  x.beginPath();ys.forEach((v,i)=>i?x.lineTo(px(i),py(v)):x.moveTo(px(i),py(v)));
  x.strokeStyle=col;x.lineWidth=2.4;x.lineJoin="round";x.stroke();
  x.fillStyle=col;ys.forEach((v,i)=>{if(i%8===0||i===ys.length-1){x.beginPath();x.arc(px(i),py(v),3,0,7);x.fill()}});
- x.fillStyle=cssv("--muted");x.font="10px 'Space Mono',monospace";x.textAlign="center";
+ x.fillStyle=cssv("--muted");x.font="10px Jost,sans-serif";x.textAlign="center";
  [0,Math.floor(xs.length/2),xs.length-1].forEach(i=>x.fillText(xs[i],px(i),H-9))}
 function nube(){const mx=Math.max(...G.nube.map(d=>d.v)),mn=Math.min(...G.nube.map(d=>d.v));
  E("nube").innerHTML=G.nube.map(d=>{const s=14+27*(d.v-mn)/(mx-mn||1);
@@ -380,7 +380,7 @@ function plano(){const box=E("plano"),c=E("cv"),r=box.getBoundingClientRect();
   pts=[];
   P.forEach((p,i)=>{if(p.te==null||p.di==null||i/P.length>e)return;
    const ppx=W*p.te/100,ppy=H-H*p.di/100,rad=1.6+(p.im||1)*.42;
-   x.globalAlpha=.55;x.fillStyle=COL[p.tp]||"#7A8699";
+   x.globalAlpha=.55;x.fillStyle=COL[p.tp]||"#7C8079";
    x.beginPath();x.arc(ppx,ppy,rad,0,7);x.fill();pts.push({px:ppx,py:ppy,p})});
   x.globalAlpha=1;if(k<1)requestAnimationFrame(paso)})()}
 
@@ -400,7 +400,7 @@ function pintar(){E("cuenta").textContent=V.length+" partidos";E("vacio").hidden
   <div><div class="j"><b>${esc(p.w)}</b> <span>venció a</span> ${esc(p.l)}</div>
    <div class="mt">${esc(p.sc)} · ${esc(p.t)} · ${RON[p.r]||p.r}${p.mi?" · "+p.mi+" min":""}</div></div>
   <div class="der">${p.dp?'<span class="sello-dp">★ ANÁLISIS PROFUNDO</span>':""}<span class="tg2" style="color:${COL[p.tp]}">${NOM[p.tp]}</span>
-   ${p.rb?'<span class="tg2" style="color:#B478FF">robo</span>':""}
+   ${p.rb?'<span class="tg2" style="color:#A57FC4">robo</span>':""}
    <span class="f">tensión ${p.te??"—"} · disputa ${p.di??"—"}</span></div></button>`).join("");
  E("mas").hidden=V.length<=tope;
  document.querySelectorAll(".pit").forEach(b=>b.onclick=()=>abrirP(+b.dataset.i))}
@@ -478,7 +478,7 @@ function abrirP(i){const p=P[i];
   <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
    ${p.dp?'<span class="sello-dp">★ ANÁLISIS PROFUNDO</span>':""}
    <span class="tg2" style="color:${COL[p.tp]}">${NOM[p.tp]}</span>
-   ${p.rb?'<span class="tg2" style="color:#B478FF">robó el partido</span>':""}
+   ${p.rb?'<span class="tg2" style="color:#A57FC4">robó el partido</span>':""}
    ${p.vu?'<span class="tg2" style="color:var(--acc)">remontada</span>':""}
    ${p.mi?`<span class="tg2" style="color:var(--muted)">${p.mi} min</span>`:""}
    ${p.rkw&&p.rkl?`<span class="tg2" style="color:var(--muted)">#${p.rkw} vs #${p.rkl}</span>`:""}</div>
@@ -518,39 +518,39 @@ function abrirP(i){const p=P[i];
  </div><div>
   ${B("lo apretado que estuvo")}
   ${med("Tensión","lo cerca que estuvo de girar",p.te,null,"var(--acc)","te")}
-  ${med("Volatilidad","vaivén entre sets",p.vo,null,"#B478FF","vo")}
-  ${med("Trayectoria","fue a más (+) o a menos (−) según avanzaba",p.tr,null,"#B478FF","tr")}
+  ${med("Volatilidad","vaivén entre sets",p.vo,null,"#A57FC4","vo")}
+  ${med("Trayectoria","fue a más (+) o a menos (−) según avanzaba",p.tr,null,"#A57FC4","tr")}
   ${B("lo que costó cada juego")}
-  ${med("Disputa","lo que costó cada juego",p.di,null,"#1FD68A","di")}
-  ${med("Puntos por juego","el mínimo posible son 4",p.ppj,null,"#1FD68A","ppj")}
+  ${med("Disputa","lo que costó cada juego",p.di,null,"#2E9A84","di")}
+  ${med("Puntos por juego","el mínimo posible son 4",p.ppj,null,"#2E9A84","ppj")}
   ${med("Puntos totales","jugados entre los dos",p.pt,null,null,"pt")}
   ${med("Minutos por punto","ritmo del partido",p.mpp,null,null,"mpp")}
-  ${med("Desgaste","volumen de juego ponderado por duración",p.dsg,null,"#FFB74D","dsg")}
+  ${med("Desgaste","volumen de juego ponderado por duración",p.dsg,null,"#C4A25F","dsg")}
   ${B("quién mandaba")}
-  ${med("Control del ganador","quién llevaba la iniciativa",p.do,null,"#3D7BFF","do")}
-  ${med("Control del perdedor","",p.dop,null,"#3D7BFF","do")}
-  ${med("Reparto de puntos","porcentaje del total que se llevó el ganador",p.pp,null,"#B478FF","pp")}
+  ${med("Control del ganador","quién llevaba la iniciativa",p.do,null,"#5B8FC4","do")}
+  ${med("Control del perdedor","",p.dop,null,"#5B8FC4","do")}
+  ${med("Reparto de puntos","porcentaje del total que se llevó el ganador",p.pp,null,"#A57FC4","pp")}
   ${med("Robo","ganó con menos puntos",p.rb?"sí":"no")}
-  ${med("Margen del robo","cuánto por debajo del 50% de los puntos",p.mr,null,"#B478FF","mr")}
-  ${med("Eficiencia","convirtió puntos sueltos en juegos ganados",p.ef,null,"#1FD68A","ef")}
+  ${med("Margen del robo","cuánto por debajo del 50% de los puntos",p.mr,null,"#A57FC4","mr")}
+  ${med("Eficiencia","convirtió puntos sueltos en juegos ganados",p.ef,null,"#2E9A84","ef")}
   ${med("Índice de saques","cerca de 1 significa que nadie rompió",p.isq,null,null,"isq")}
-  ${med("Asimetría","cuánto destacó sacando frente a restando",p.asi,null,"#1FD68A","asi")}
+  ${med("Asimetría","cuánto destacó sacando frente a restando",p.asi,null,"#2E9A84","asi")}
   ${B("los momentos que decidieron")}
-  ${med("B. break desperdiciadas","oportunidades que dejó escapar",p.de,null,"#FFB74D","de")}
-  ${med("Tasa de desperdicio","proporción de las que falló",p.td==null?null:p.td,null,"#FFB74D","td")}
-  ${med("Puntos clave ganados","breaks y tiebreaks que decidieron",p.pcl,null,"#FF5C39","pcl")}
-  ${med("B. break salvadas de más","frente a las que cabía esperar",p.escp,null,"#FF5C39","escp")}
+  ${med("B. break desperdiciadas","oportunidades que dejó escapar",p.de,null,"#C4A25F","de")}
+  ${med("Tasa de desperdicio","proporción de las que falló",p.td==null?null:p.td,null,"#C4A25F","td")}
+  ${med("Puntos clave ganados","breaks y tiebreaks que decidieron",p.pcl,null,"#C2605C","pcl")}
+  ${med("B. break salvadas de más","frente a las que cabía esperar",p.escp,null,"#C2605C","escp")}
   ${B("más allá de este partido")}
-  ${med("Racha de desgaste","lo que el ganador arrastra de los últimos 7 días",p.rc,null,"#FFB74D","rc")}
-  ${med("Rivalidad","tensión media de todos los duelos entre estos dos",p.rivt,null,"#FF5C39","rivt")}
+  ${med("Racha de desgaste","lo que el ganador arrastra de los últimos 7 días",p.rc,null,"#C4A25F","rc")}
+  ${med("Rivalidad","tensión media de todos los duelos entre estos dos",p.rivt,null,"#C2605C","rivt")}
   ${med("Veces que se han cruzado","en todo el histórico del circuito",p.rivn,null,null,"rivn")}
   ${p.rec?`<div class="sr"><div class="row"><div class="lb">Récord personal<small>de la temporada</small></div><div class="vv" style="color:var(--acc);font-size:15px">su partido con más ${p.rec}</div></div></div>`:""}
   ${B("qué significó")}
-  ${med("Espectáculo","lo que había en juego por lo reñido que fue",p.es,null,"#FFB74D","es")}
+  ${med("Espectáculo","lo que había en juego por lo reñido que fue",p.es,null,"#C4A25F","es")}
   ${med("Importancia","torneo × ronda · máx 12",p.im,[0,12,4])}
-  ${med("Calidad","buen nivel por los dos lados a la vez",p.ca,null,"#FFB74D","ca")}
-  ${med("Contundencia","lo claro que fue el resultado",p.pal,null,"#FF5C39","pal")}
-  ${med("Sorpresa","lo improbable que era este resultado",p.so,null,"#FF5C39","so")}
+  ${med("Calidad","buen nivel por los dos lados a la vez",p.ca,null,"#C4A25F","ca")}
+  ${med("Contundencia","lo claro que fue el resultado",p.pal,null,"#C2605C","pal")}
+  ${med("Sorpresa","lo improbable que era este resultado",p.so,null,"#C2605C","so")}
   ${B("lectura automática")}
   <p style="font-size:14.5px;color:var(--muted);margin:0 0 10px">${lect(p)}</p>
   <p style="font-size:11.5px;color:var(--muted);opacity:.7;margin:0">Generada por reglas fijas sobre las cifras de arriba. Sin intervención humana ni modelos de lenguaje.</p>
@@ -650,9 +650,9 @@ function pulso(cv,sets,nomW,nomL,col){
  x.beginPath();pts.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));
  x.strokeStyle=col;x.lineWidth=2.6;x.lineJoin="round";x.stroke();
  pts.forEach((q,i)=>{if(!i)return;x.fillStyle=col;x.beginPath();x.arc(q[0],q[1],4.5,0,7);x.fill();
-  x.fillStyle=cssv("--muted");x.font="11px 'Space Mono',monospace";x.textAlign="center";
+  x.fillStyle=cssv("--muted");x.font="11px Jost,sans-serif";x.textAlign="center";
   x.fillText(sets[i-1][0]+"-"+sets[i-1][1],q[0],H-9)});
- x.fillStyle=cssv("--ink");x.font="600 11.5px Sora";x.textAlign="left";
+ x.fillStyle=cssv("--ink");x.font="600 11.5px Jost";x.textAlign="left";
  x.fillText(nomW.split(" ").slice(-1)[0],6,16);
  x.fillStyle=cssv("--muted");x.fillText(nomL.split(" ").slice(-1)[0],6,H-26);
 }
@@ -677,17 +677,17 @@ function radar(cv,ejes,col1,col2){
    x.fillStyle=col;x.beginPath();x.arc(cxp+Math.cos(a)*r,cyp+Math.sin(a)*r,3,0,7);x.fill()})};
  poly(ejes.map(e=>e.b),col2,.16);
  poly(ejes.map(e=>e.a),col1,.22);
- x.font="600 10.5px Sora";x.fillStyle=cssv("--muted");
+ x.font="600 10.5px Jost";x.fillStyle=cssv("--muted");
  ejes.forEach((e,i)=>{const a=ang(i),d=R+16;
   const px=cxp+Math.cos(a)*d,py=cyp+Math.sin(a)*d;
   x.textAlign=Math.abs(Math.cos(a))<.3?"center":(Math.cos(a)>0?"left":"right");
   x.textBaseline=Math.sin(a)>.5?"top":(Math.sin(a)<-.5?"bottom":"middle");
   x.fillText(e.n,px,py);
-  if(e.va!=null){x.font="700 10.5px 'Space Mono',monospace";
+  if(e.va!=null){x.font="700 10.5px Jost,sans-serif";
    const dy=x.textBaseline==="top"?13:(x.textBaseline==="bottom"?-13:13);
    x.fillStyle=col1;x.fillText(e.va,px-(x.textAlign==="center"?15:0),py+dy);
    x.fillStyle=cssv("--muted");x.fillText(e.vb,px+(x.textAlign==="center"?15:(x.textAlign==="left"?34:-34)),py+dy);
-   x.font="600 10.5px Sora";x.fillStyle=cssv("--muted")}});
+   x.font="600 10.5px Jost";x.fillStyle=cssv("--muted")}});
 }
 function cx2(cv,h){if(!cv)return null;const r=cv.getBoundingClientRect();if(!r.width)return null;
  const d=Math.min(devicePixelRatio||1,2);cv.width=r.width*d;cv.height=h*d;cv.style.height=h+"px";
@@ -718,7 +718,7 @@ function montar(v){
    barrasPct("gT",S.sup.map(s=>SUPN[s]||s),S.cols,S.pct,200);
    hist("gH",G.h_tension.v,G.h_tension.e,cssv("--acc"),200);
    linea("gA",G.evol.y,G.evol.ace,cssv("--acc"),210);
-   linea("gN",G.evol.y,G.evol.ten,"#4D95FF",210);
+   linea("gN",G.evol.y,G.evol.ten,"#5B8FC4",210);
    if(!listos.has("lab")){listos.add("lab");labInit();compInit()}
   }
   if(v==="semana"&&!listos.has("semana")){listos.add("semana");semanaInit()}
@@ -953,21 +953,21 @@ function cortoLargo(cv,p,dp){
  const o=cx2(cv,260);if(!o)return;const{x,W,H}=o;
  const M={l:48,r:88,t:22,b:44},cats=["1-3","4-6","7-9","10"],et=["1 a 3","4 a 6","7 a 9","10 o más"];
  const px=i=>M.l+(W-M.l-M.r)*i/3,py=v=>H-M.b-(H-M.t-M.b)*v;
- x.strokeStyle=cssv("--line");x.fillStyle=cssv("--muted");x.font="10px 'Space Mono',monospace";x.textAlign="right";
+ x.strokeStyle=cssv("--line");x.fillStyle=cssv("--muted");x.font="10px Jost,sans-serif";x.textAlign="right";
  [0,.25,.5,.75,1].forEach(v=>{x.beginPath();x.moveTo(M.l,py(v));x.lineTo(W-M.r,py(v));x.stroke();x.fillText(Math.round(v*100)+"%",M.l-7,py(v)+3)});
  x.setLineDash([4,5]);x.strokeStyle=cssv("--muted");x.beginPath();x.moveTo(M.l,py(.5));x.lineTo(W-M.r,py(.5));x.stroke();x.setLineDash([]);
- x.textAlign="center";x.font="600 10.5px Sora";et.forEach((t,i)=>x.fillText(t,px(i),H-22));
- x.font="500 10px Sora";x.fillText("golpes por punto",(M.l+W-M.r)/2,H-6);
- [["w",cssv("--acc"),p.w],["l","#8FB2DA",p.l]].forEach(([L,col,nom])=>{
+ x.textAlign="center";x.font="600 10.5px Jost";et.forEach((t,i)=>x.fillText(t,px(i),H-22));
+ x.font="500 10px Jost";x.fillText("golpes por punto",(M.l+W-M.r)/2,H-6);
+ [["w",cssv("--acc"),p.w],["l","#8DB59A",p.l]].forEach(([L,col,nom])=>{
   const R=(dp.J[L]||{}).rally;if(!R)return;
   const v=cats.map(c=>{const[w,n]=R[c]||[0,0];return n>=3?{p:w/n,n}:null});
   x.strokeStyle=col;x.lineWidth=2.8;x.lineJoin="round";x.beginPath();let first=true;
   v.forEach((q,i)=>{if(!q)return;first?x.moveTo(px(i),py(q.p)):x.lineTo(px(i),py(q.p));first=false});x.stroke();
   v.forEach((q,i)=>{if(!q)return;x.fillStyle=col;x.beginPath();x.arc(px(i),py(q.p),4.5,0,7);x.fill();
-   x.fillStyle=cssv("--muted");x.font="9.5px 'Space Mono',monospace";x.textAlign="center";
+   x.fillStyle=cssv("--muted");x.font="9.5px Jost,sans-serif";x.textAlign="center";
    x.fillText(q.n+"p",px(i),py(q.p)+(L==="w"?-9:16))});
   const last=[...v].reverse().find(q=>q),li=v.lastIndexOf(last);
-  if(last){x.fillStyle=col;x.font="700 11.5px Sora";x.textAlign="left";x.fillText(nom.split(" ").slice(-1)[0],px(li)+10,py(last.p)+4)}
+  if(last){x.fillStyle=col;x.font="700 11.5px Jost";x.textAlign="left";x.fillText(nom.split(" ").slice(-1)[0],px(li)+10,py(last.p)+4)}
  });
 }
 
@@ -979,17 +979,17 @@ function adondeSaca(cv,p,dp){
   [[ox,[0,1,2],["abierto","cuerpo","T"]],[ox+half,[5,4,3],["T","cuerpo","abierto"]]].forEach(([x0,ids,nm])=>{
    const zw=half/3;ids.forEach((k,zi)=>{const v=sd?sd[k]||0:0,t=v/(mx||1);
     x.globalAlpha=.1+t*.8;x.fillStyle=col;x.fillRect(x0+zi*zw,oy,zw,ch);x.globalAlpha=1;
-    x.fillStyle=t>.55?"#0B0E14":cssv("--ink");x.font="700 "+(11+t*6)+"px 'Space Mono',monospace";x.textAlign="center";
+    x.fillStyle=t>.55?"#0B0E14":cssv("--ink");x.font="700 "+(11+t*6)+"px Jost,sans-serif";x.textAlign="center";
     x.fillText(Math.round(v*100)+"%",x0+zi*zw+zw/2,oy+ch/2+4);
-    x.font="600 8.5px Sora";x.fillStyle=cssv("--muted");x.fillText(nm[zi],x0+zi*zw+zw/2,oy+ch-6)})});
+    x.font="600 8.5px Jost";x.fillStyle=cssv("--muted");x.fillText(nm[zi],x0+zi*zw+zw/2,oy+ch-6)})});
   x.strokeStyle=cssv("--ink");x.lineWidth=1.5;x.strokeRect(ox,oy,cw,ch);
   x.beginPath();x.moveTo(ox+half,oy);x.lineTo(ox+half,oy+ch);x.stroke();
   x.lineWidth=3.5;x.beginPath();x.moveTo(ox-6,oy);x.lineTo(ox+cw+6,oy);x.stroke();
-  x.fillStyle=col;x.font="700 12px Sora";x.textAlign="center";x.fillText(nom.split(" ").slice(-1)[0],ox+cw/2,20);
-  x.fillStyle=cssv("--muted");x.font="10px Sora";x.fillText(`${n||0} primeros saques · iguales | ventaja`,ox+cw/2,oy+ch+18)};
+  x.fillStyle=col;x.font="700 12px Jost";x.textAlign="center";x.fillText(nom.split(" ").slice(-1)[0],ox+cw/2,20);
+  x.fillStyle=cssv("--muted");x.font="10px Jost";x.fillText(`${n||0} primeros saques · iguales | ventaja`,ox+cw/2,oy+ch+18)};
  const cw=Math.min((W-50)/2,300),gap=Math.max(24,W-2*cw-20);
  pista(10,cw,(dp.J.w||{}).sd,p.w,cssv("--acc"),(dp.J.w||{}).sdn);
- pista(10+cw+Math.min(gap,60),cw,(dp.J.l||{}).sd,p.l,"#8FB2DA",(dp.J.l||{}).sdn);
+ pista(10+cw+Math.min(gap,60),cw,(dp.J.l||{}).sd,p.l,"#8DB59A",(dp.J.l||{}).sdn);
 }
 
 /* ---- huella del partido, las dos superpuestas ---- */
@@ -1010,13 +1010,13 @@ function huellaDoble(cv,p,dp){
    const rr=R*(.16+.84*v/ws);P2.push([cxp+Math.cos(t)*rr,cyp+Math.sin(t)*rr])}
   x.beginPath();P2.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.closePath();
   x.globalAlpha=al;x.fillStyle=col;x.fill();x.globalAlpha=1;x.strokeStyle=col;x.lineWidth=2.2;x.stroke()};
- forma(B,"#8FB2DA",.22);forma(A,cssv("--acc"),.28);
- x.font="600 10px Sora";x.fillStyle=cssv("--muted");
+ forma(B,"#8DB59A",.22);forma(A,cssv("--acc"),.28);
+ x.font="600 10px Jost";x.fillStyle=cssv("--muted");
  A.forEach((r,k)=>{const a=k/n*Math.PI*2-Math.PI/2,d=R+20;
   x.textAlign=Math.abs(Math.cos(a))<.3?"center":(Math.cos(a)>0?"left":"right");x.fillText(r[0],cxp+Math.cos(a)*d,cyp+Math.sin(a)*d+4)});
- x.font="700 11.5px Sora";x.textAlign="left";
+ x.font="700 11.5px Jost";x.textAlign="left";
  x.fillStyle=cssv("--acc");x.fillText("■ "+p.w.split(" ").slice(-1)[0],10,16);
- x.fillStyle="#8FB2DA";x.fillText("■ "+p.l.split(" ").slice(-1)[0],10,32);
+ x.fillStyle="#8DB59A";x.fillText("■ "+p.l.split(" ").slice(-1)[0],10,32);
 }
 
 
@@ -1092,7 +1092,7 @@ function rankingInit(){
  const nom=Object.keys(R.puntos),sem=R.semanas,lista=E("rkLista"),sl=E("rkSl");
  sl.min=0;sl.max=sem.length-1;sl.value=sem.length-1;
  lista.style.height=(nom.length*32)+"px";
- const col=["#F0B429","#C9D2DE","#D88B4E"];
+ const col=["#C4A25F","#C9D2DE","#A9744A"];
  const F={};
  nom.forEach(n=>{const d=document.createElement("div");d.className="rk-f";
   d.innerHTML=`<span class="p"></span><span class="n">${esc(n.split(" ").slice(-1)[0])}</span>
@@ -1108,7 +1108,7 @@ function rankingInit(){
    d.querySelector(".p").textContent=k+1;
    const b=d.querySelector(".b i");b.style.width=(100*pts/mx)+"%";b.style.background=k<3?col[k]:"var(--acc)";b.style.opacity=k<3?1:.55;
    const mov=pre-act;
-   d.querySelector(".v").innerHTML=`${pts.toLocaleString("es")}${mov?`<span class="m" style="color:${mov>0?"#2BE38F":"#FF7A45"}">${mov>0?"▲":"▼"}</span>`:""}`});
+   d.querySelector(".v").innerHTML=`${pts.toLocaleString("es")}${mov?`<span class="m" style="color:${mov>0?"#8DB59A":"#C2605C"}">${mov>0?"▲":"▼"}</span>`:""}`});
  };
  let T;
  E("rkPlay").onclick=()=>{clearInterval(T);sl.value=0;pinta();
@@ -1124,7 +1124,7 @@ function cuenta(id,fin){const el=E(id);if(!el)return;const t0=performance.now();
 (async function(){
  try{await cargarBase();await cargarTemporada(TEMP.actual);CUR={rk:D.rk,semana:D.semana,kpi:D.kpi}}
  catch(e){console.error("[deuce] datos",e);
-  document.body.insertAdjacentHTML("afterbegin",'<div style="position:fixed;inset:auto 0 0 0;z-index:300;padding:14px;background:#FF5C39;color:#0B0E14;text-align:center;font-weight:600">No se han podido cargar los datos. Recarga la página en unos segundos.</div>');return}
+  document.body.insertAdjacentHTML("afterbegin",'<div style="position:fixed;inset:auto 0 0 0;z-index:300;padding:14px;background:#C2605C;color:#0B0E14;text-align:center;font-weight:600">No se han podido cargar los datos. Recarga la página en unos segundos.</div>');return}
  E("ult").textContent=fF(CUR.kpi.ultima);
  const s=CUR.semana;
  if(s){E("swNom").textContent=`${s.w} venció a ${s.l}`;E("swSc").textContent=`${s.sc} · ${s.t}`}
