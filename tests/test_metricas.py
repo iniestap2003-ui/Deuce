@@ -63,6 +63,19 @@ def test_tension_ordena_partidos():
     assert estructura("6-0 6-0")["tension"] < estructura("6-4 6-4")["tension"] < estructura("7-5 7-6")["tension"]
 
 
+@pytest.mark.parametrize("score, decisivo", [
+    ("6-4 3-6 6-3", 1), ("6-4 3-6 6-3 4-6 6-2", 1), ("6-3 6-7(4) [10-6]", 1),
+    ("6-4 6-4", 0), ("6-4 6-4 6-4", 0), ("6-4 3-6 6-3 6-2", 0),
+])
+def test_set_decisivo(score, decisivo):
+    assert estructura(score)["set_decisivo"] == decisivo
+
+
+def test_un_3_0_a_cinco_sets_no_lleva_plus_de_tension():
+    # mismos sets que un 6-4 6-4 a tres: sin plus, la misma tensión
+    assert estructura("6-4 6-4 6-4")["tension"] == estructura("6-4 6-4")["tension"]
+
+
 def test_volatilidad():
     assert estructura("6-4 6-4")["volatilidad"] == 0
     assert estructura("6-1 1-6 6-1")["volatilidad"] > estructura("6-4 4-6 6-4")["volatilidad"]
