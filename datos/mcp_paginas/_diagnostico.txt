@@ -1,11 +1,11 @@
-Informe del robot · 2026-10-14 11:09
+Informe del robot · 2026-10-15 10:50
 robots.txt: leído
 lista de Tennis Abstract: 2666 KB · partidos masculinos: 10,190
-de nuestro archivo y aún sin tener: 26 (de Roland Garros 2026: 0)
-descargadas y convertidas: 1 · fallos de conexión: 1 · no interpretadas: 24
+de nuestro archivo y aún sin tener: 330 (de Roland Garros 2026: 6)
+descargadas y convertidas: 241 · fallos de conexión: 1 · no interpretadas: 88
   sin conexión con 20140710-M-Bastad-R16-Victor_Hanescu-David_Ferrer.html: HTTP Error 404: Not Found
-  no se pudo interpretar 20220717-M-Newport-F-Alexander_Bublik-Maxime_Cressy.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20220906-M-US_Open-QF-Karen_Khachanov-Nick_Kyrgios.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20221023-M-Naples-F-Lorenzo_Musetti-Matteo_Berrettini.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-  no se pudo interpretar 20221103-M-Paris_Masters-R16-Frances_Tiafoe-Alex_De_Minaur.html: TypeError: unsupported operand type(s) for +: 'int' and 'NoneType'
-AL DÍA: no falta ningún partido anotado de nuestro archivo
+    86 × página incompleta: la página solo trae el registro punto a punto, sin tablas de estadísticas
+         p. ej. 20041107-M-Paris_Masters-F-Marat_Safin-Radek_Stepanek.html
+     2 × página incompleta: la página no dice el resultado ('A d. B ...'): partido sin terminar o abandonado
+         p. ej. 20151022-M-Vienna-R16-Jo_Wilfried_Tsonga-Lukas_Rosol.html
+PENDIENTE: 88 páginas sin interpretar · 1 sin descargar por la conexión
