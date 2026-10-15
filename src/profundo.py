@@ -22,6 +22,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).parent))
 from leer_partido import leer, _modelo
+from limpieza import sets_del_marcador
 
 RAIZ = Path(__file__).resolve().parent.parent
 D, M = RAIZ / "datos", RAIZ / "datos" / "mcp"
@@ -64,22 +65,36 @@ class Archivo:
     """Índice del archivo por pareja de jugadores, para emparejar partidos anotados."""
     def __init__(self, arch):
         self.por_par = {}
-        for i, f, t, r, w, l in zip(arch.index, arch.fecha, arch.tourney_name, arch["round"], arch.winner_name, arch.loser_name):
-            self.por_par.setdefault(frozenset((letras(w), letras(l))), []).append((i, f, ntor(t), r))
+        for i, f, t, r, w, l, sc in zip(arch.index, arch.fecha, arch.tourney_name, arch["round"], arch.winner_name,
+                                        arch.loser_name, arch.score):
+            self.por_par.setdefault(frozenset((letras(w), letras(l))), []).append((i, f, ntor(t), r, letras(w), sc))
 
-    def candidatos(self, p1, p2, fecha, ronda, torneo):
+    def candidatos(self, p1, p2, fecha, ronda, torneo, sets=None):
         """Partidos del archivo que pueden ser este, con su puntuación.
         Hace falta que coincida la ronda o el torneo; más allá de 30 días, el torneo sí o sí
-        (el proyecto golpe a golpe tiene alguna fecha desviada)."""
+        (el proyecto golpe a golpe tiene alguna fecha desviada).
+
+        Con `sets` (el marcador que sale del punto a punto, orientado a p1 como ganador)
+        manda el resultado: si coincide set por set, vale aunque la ronda o el torneo no
+        (Tennis Abstract tiene algún partido con el torneo equivocado); si no coincide, hace
+        falta el torneo, porque la ronda sola casa exhibiciones como la Six Kings Slam con la
+        final de otro torneo de esas semanas."""
         kt, out = ntor(torneo), []
-        for i, f, t, r in self.por_par.get(frozenset((letras(p1), letras(p2))), []):
+        for i, f, t, r, gw, sc in self.por_par.get(frozenset((letras(p1), letras(p2))), []):
             dias = abs((f - fecha).days)
             if dias > 60:
                 continue
             ts, rs = tor_parecido(kt, t), bool(ronda) and ronda == r
-            if not (ts or rs) or (dias > 30 and not ts):
+            if sets is None:
+                if not (ts or rs) or (dias > 30 and not ts):
+                    continue
+                out.append((3 * ts + 2 * rs - dias / 30, i))
                 continue
-            out.append((3 * ts + 2 * rs - dias / 30, i))
+            oficial = [list(x) for x in sets_del_marcador(sc)]
+            igual = (sets if gw == letras(p1) else [x[::-1] for x in sets]) == oficial
+            if not (ts or igual):
+                continue
+            out.append((3 * ts + 2 * rs + 10 * igual - dias / 30, i))
         return out
 
 
@@ -282,8 +297,27 @@ def reconstruir(deep):
 def cuadra(deep, marcador):
     """CONTROL DE CALIDAD: la secuencia punto a punto tiene que reproducir el resultado
     oficial set por set. Si no, es un partido anotado a medias o mal emparejado."""
-    from limpieza import sets_del_marcador
     return reconstruir(deep) == [list(x) for x in sets_del_marcador(marcador)]
+
+
+def por_que_no_cuadra(deep, bo, marcador, girar=False):
+    """Explicación para el informe: anotado a medias, imposible, o entero pero distinto del oficial.
+    girar: el ganador oficial no es el que da la página; el marcador se escribe desde el oficial."""
+    sets = [x[::-1] for x in reconstruir(deep)] if girar else reconstruir(deep)
+    txt = " ".join(f"{a}-{b}" for a, b in sets)
+    fin = deep["seq"][-1] if deep["seq"] else None
+    a = sum(1 for w in fin["p"] if w == 1) if fin else 0
+    b = len(fin["p"]) - a if fin else 0
+    def cerrado(x, y):
+        return (max(x, y) >= 6 and abs(x - y) >= 2) or sorted((x, y)) == [6, 7]
+    tb_abierto = bool(fin) and fin["g"] == [6, 6] and not (max(a, b) >= 7 and abs(a - b) >= 2)
+    need = 3 if bo == 5 else 2
+    ganados, perdidos = sum(1 for x, y in sets if x > y), sum(1 for x, y in sets if x < y)
+    if max(ganados, perdidos) > need or (ganados == need and perdidos == need):
+        return f"punto a punto imposible: {txt} da más sets de los necesarios (oficial {marcador})"
+    if tb_abierto or not all(cerrado(x, y) for x, y in sets) or max(ganados, perdidos) < need:
+        return f"anotado a medias: el punto a punto se queda en {txt or 'nada'} (oficial {marcador})"
+    return f"el anotador registra {txt} y el resultado oficial es {marcador}"
 
 
 def construir(recalcular_repo=None):
@@ -349,21 +383,32 @@ def construir(recalcular_repo=None):
             except Exception:
                 continue
             paginas[fh.name] = (meta, deep, nv)
-            ofertas += [(s, fh.name, i) for s, i in A.candidatos(meta["ganador"], meta["perdedor"], fecha, meta["ronda"], meta["torneo"])]
+            sets = reconstruir(deep)            # orientado al ganador que da la página
+            ofertas += [(s, fh.name, i) for s, i in A.candidatos(meta["ganador"], meta["perdedor"], fecha, meta["ronda"],
+                                                                   meta["torneo"], sets)]
         asig = asignar(ofertas)
-        no_cuadra = []
+        no_cuadra, otro_torneo = [], []
         for nombre, i in asig.items():
             meta, deep, nv = paginas[nombre]
             r = arch.loc[i]
             if cuadra(deep, r.score):                        # contra el resultado OFICIAL del archivo
-                out[clave(r.fecha, r.winner_name, r.loser_name, r["round"])] = {"deep": deep, "nv": nv}
+                k = clave(r.fecha, r.winner_name, r.loser_name, r["round"])
+                if not tor_parecido(ntor(meta["torneo"]), ntor(r.tourney_name)):
+                    # casado por el resultado: la web lo tiene con otro torneo. Si el repositorio
+                    # ya trae ese partido, es la misma anotación y manda la del repositorio
+                    otro_torneo.append(f"{nombre}: es {r.tourney_name} {r['round']} {r.fecha:%Y} ({r.score})"
+                                       + (", ya estaba en el repositorio" if k in out else ""))
+                    if k in out:
+                        continue
+                out[k] = {"deep": deep, "nv": nv}
                 pag += 1
             else:
-                no_cuadra.append(f"{nombre}: su punto a punto no reproduce el resultado oficial {r.score}")
+                no_cuadra.append(f"{nombre}: {por_que_no_cuadra(deep, meta['bo'], r.score, letras(meta['ganador']) != letras(r.winner_name))}")
         sin_pareja = [n for n in paginas if n not in asig]
         (carpeta / "_emparejamiento.txt").write_text(
             f"páginas convertidas: {len(paginas)} · emparejadas con el archivo: {len(asig)} · "
             f"con análisis profundo: {pag}\n\nsin pareja en el archivo ({len(sin_pareja)}):\n  " + "\n  ".join(sin_pareja[:40]) +
+            f"\n\ncasadas por su resultado con otro torneo ({len(otro_torneo)}):\n  " + "\n  ".join(otro_torneo[:40]) +
             f"\n\nno pasan el control de calidad ({len(no_cuadra)}):\n  " + "\n  ".join(no_cuadra[:40]) + "\n", encoding="utf-8")
     json.dump(out, open(D / "profundo.json", "w"), ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     return n_anot, emp, len(out), fallos, pag
