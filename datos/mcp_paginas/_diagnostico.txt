@@ -1,11 +1,8 @@
-Informe del robot · 2026-10-15 10:50
+Informe del robot · 2026-10-16 10:40
 robots.txt: leído
-lista de Tennis Abstract: 2666 KB · partidos masculinos: 10,190
-de nuestro archivo y aún sin tener: 330 (de Roland Garros 2026: 6)
-descargadas y convertidas: 241 · fallos de conexión: 1 · no interpretadas: 88
+lista de Tennis Abstract: 2667 KB · partidos masculinos: 10,198
+de nuestro archivo y aún sin tener: 3 (de Roland Garros 2026: 0)
+descargadas y convertidas: 2 · fallos de conexión: 1 · no interpretadas: 0
   sin conexión con 20140710-M-Bastad-R16-Victor_Hanescu-David_Ferrer.html: HTTP Error 404: Not Found
-    86 × página incompleta: la página solo trae el registro punto a punto, sin tablas de estadísticas
-         p. ej. 20041107-M-Paris_Masters-F-Marat_Safin-Radek_Stepanek.html
-     2 × página incompleta: la página no dice el resultado ('A d. B ...'): partido sin terminar o abandonado
-         p. ej. 20151022-M-Vienna-R16-Jo_Wilfried_Tsonga-Lukas_Rosol.html
+apartadas de ejecuciones anteriores por no entenderse: 88 (se reintentan a los 14 días o al cambiar la versión del lector; lista en _fallos.txt)
 PENDIENTE: 88 páginas sin interpretar · 1 sin descargar por la conexión
