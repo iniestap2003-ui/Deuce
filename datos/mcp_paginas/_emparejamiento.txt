@@ -1,7 +1,9 @@
-páginas convertidas: 2172 · emparejadas con el archivo: 2171 · con análisis profundo: 2145
+páginas convertidas: 2176 · emparejadas con el archivo: 2173 · con análisis profundo: 2147
 
-sin pareja en el archivo (1):
+sin pareja en el archivo (3):
   20190331-M-Marbella_CH-F-Benoit_Paire-Pablo_Andujar.json
+  20260718-M-Gstaad-SF-Alexander_Shevchenko-Stefanos_Tsitsipas.json
+  20260924-M-Chengdu-R32-Alexander_Shevchenko-Hubert_Hurkacz.json
 
 no pasan el control de calidad (26):
   19970113-M-Australian_Open-R128-Carlos_Moya-Boris_Becker.json: su punto a punto no reproduce el resultado oficial 5-7 7-6(4) 2-6 6-1 6-4
