@@ -1,8 +1,8 @@
-Informe del robot · 2026-11-24 16:56
+Informe del robot · 2026-11-25 16:46
 robots.txt: leído
-lista de Tennis Abstract: 2694 KB · partidos masculinos: 10,321
-de nuestro archivo y aún sin tener: 8 (de Roland Garros 2026: 0)
-descargadas y convertidas: 6 · fallos de conexión: 2 · no interpretadas: 0
+lista de Tennis Abstract: 2695 KB · partidos masculinos: 10,331
+de nuestro archivo y aún sin tener: 18 (de Roland Garros 2026: 0)
+descargadas y convertidas: 16 · fallos de conexión: 2 · no interpretadas: 0
   sin conexión con 20140710-M-Bastad-R16-Victor_Hanescu-David_Ferrer.html: HTTP Error 404: Not Found
   sin conexión con 20150610-M-sHertogenbosch-R16-Vasek_Pospisil-Gilles_Muller.html: HTTP Error 404: Not Found
 apartadas de ejecuciones anteriores por no entenderse: 88 (se reintentan a los 14 días o al cambiar la versión del lector; lista en _fallos.txt)
